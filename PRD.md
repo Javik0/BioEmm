@@ -33,11 +33,30 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Progression**: Seleccionar cliente → Ingresar hectáreas → Seleccionar cultivo → Elegir productos → Sistema calcula cantidades → Guardar dosificación → Genera registro auditable
 - **Success criteria**: Cálculos precisos, historial de dosificaciones por cliente, exportable
 
+### Gestión de Inventario de Productos
+- **Functionality**: Sistema completo de inventario con catálogo de productos, control de stock actual, mínimos y máximos, categorización, costeo, y alertas automáticas
+- **Purpose**: Controlar disponibilidad de productos para dosificaciones, prevenir desabastecimientos, optimizar reposiciones, y calcular valor del inventario
+- **Trigger**: Tab "Inventario" en navegación principal, botón "Nuevo Producto"
+- **Progression**: Crear producto → Definir categoría y unidad → Establecer stocks inicial/mínimo/máximo → Sistema monitorea niveles → Alertas automáticas cuando stock < mínimo → Registrar entradas/salidas → Historial completo de movimientos
+- **Success criteria**: 
+  - Productos categorizados correctamente
+  - Alertas visibles en dashboard cuando stock bajo/crítico
+  - Historial completo y auditable de movimientos
+  - Cálculo automático de valor total del inventario
+  - Stock actualizado en tiempo real tras entradas/salidas
+
+### Control de Movimientos de Stock
+- **Functionality**: Registro detallado de entradas, salidas y ajustes de inventario con razones, referencias y trazabilidad
+- **Purpose**: Mantener control preciso del inventario, auditar movimientos, identificar patrones de consumo
+- **Trigger**: Botones "Entrada" o "Salida" en cada producto
+- **Progression**: Seleccionar producto → Elegir tipo de movimiento → Ingresar cantidad → Seleccionar motivo → Agregar referencia → Confirmar → Stock actualizado + movimiento registrado en historial
+- **Success criteria**: Cada movimiento registrado con timestamp, stock siempre sincronizado, imposibilidad de stock negativo
+
 ### Dashboard de Clientes
 - **Functionality**: Vista unificada con estadísticas, lista filtrable y acciones rápidas
 - **Purpose**: Proveer panorama completo del estado comercial y facilitar acceso rápido
 - **Trigger**: Pantalla principal al abrir la app
-- **Progression**: Cargar dashboard → Ver métricas (total clientes, hectáreas gestionadas) → Filtrar por cultivo/zona → Acceder a cliente específico
+- **Progression**: Cargar dashboard → Ver métricas (total clientes, hectáreas gestionadas, inventario) → Filtrar por cultivo/zona → Acceder a cliente específico
 - **Success criteria**: Carga rápida (<2s), búsqueda instantánea, navegación intuitiva
 
 ## Edge Case Handling
@@ -46,6 +65,10 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Duplicados**: Validar nombre+teléfono antes de crear, sugerir cliente existente
 - **Datos incompletos**: Validación de campos mínimos, permitir guardado parcial como "borrador"
 - **Sin conexión (futuro PWA)**: Modo offline con sincronización posterior
+- **Stock negativo**: Prevenir salidas que resulten en stock negativo, mostrar advertencia
+- **Alertas de reorden**: Sistema automático de alertas cuando stock <= mínimo, criticidad cuando stock <= mínimo * 0.5
+- **Productos sin costo**: Permitir productos sin costo unitario, calcular valor de inventario solo para productos con precio
+- **Movimientos sin referencia**: Permitir movimientos manuales sin referencia obligatoria para flexibilidad
 
 ## Design Direction
 BioEmm debe transmitir **confianza técnica y profesionalismo agroindustrial**. El diseño refleja la naturaleza del negocio (agricultura, crecimiento, precisión) con paleta terrenal/vegetal, pero manteniendo sofisticación empresarial. Espacios generosos, tipografía clara, iconografía funcional.
@@ -110,13 +133,17 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 
 **Icon Selection (Phosphor Icons)**:
 - MapPin: Ubicaciones de clientes
-- Plus/PlusCircle: Nuevo cliente, nueva dosificación  
+- Plus/PlusCircle: Nuevo cliente, nueva dosificación, nuevo producto
 - Flask: Dosificaciones, productos químicos
 - ChartLine: Reportes, estadísticas
 - Users: Módulo de clientes
-- Package: Inventario de productos
+- Package: Inventario de productos, stock
 - CalendarCheck: Programación de visitas
-- Warning: Alertas de stock bajo
+- Warning/WarningCircle: Alertas de stock bajo/crítico
+- ArrowUp: Entradas de stock
+- ArrowDown: Salidas de stock
+- ArrowsClockwise: Ajustes de inventario
+- ClockCounterClockwise: Historial de movimientos
 
 **Spacing**:
 - Cards: p-6 (24px padding interior)

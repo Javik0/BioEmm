@@ -26,12 +26,53 @@ export interface Client {
   notes?: string
 }
 
+export type ProductCategory = 
+  | 'Fertilizante' 
+  | 'Insecticida' 
+  | 'Fungicida' 
+  | 'Herbicida'
+  | 'Bioestimulante'
+  | 'Otro'
+
+export type ProductUnit = 
+  | 'L' 
+  | 'kg' 
+  | 'g'
+  | 'ml'
+  | 'unidades'
+
 export interface Product {
   id: string
   name: string
-  type: string
-  unit: string
-  stock: number
+  category: ProductCategory
+  unit: ProductUnit
+  currentStock: number
+  minStock: number
+  maxStock?: number
+  costPerUnit?: number
+  supplier?: string
+  sku?: string
+  createdAt: string
+  lastRestockDate?: string
+  notes?: string
+}
+
+export interface StockMovement {
+  id: string
+  productId: string
+  productName: string
+  type: 'entry' | 'exit' | 'adjustment'
+  quantity: number
+  previousStock: number
+  newStock: number
+  reason: string
+  relatedTo?: {
+    type: 'dosification' | 'purchase' | 'manual'
+    id?: string
+    reference?: string
+  }
+  createdAt: string
+  createdBy?: string
 }
 
 export interface DosificationProduct {

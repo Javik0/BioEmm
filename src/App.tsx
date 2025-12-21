@@ -1,31 +1,44 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Client, Dosification } from '@/types'
+import { Client, Dosification, Product, StockMovement } from '@/types'
 import { ClientForm } from '@/components/ClientForm'
 import { ClientList } from '@/components/ClientList'
 import { DosificationForm } from '@/components/DosificationForm'
 import { SimpleMap } from '@/components/SimpleMap'
+import { ProductForm } from '@/components/ProductForm'
+import { ProductList } from '@/components/ProductList'
+import { StockAdjustmentForm } from '@/components/StockAdjustmentForm'
+import { StockHistory } from '@/components/StockHistory'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, MagnifyingGlass } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 
 function App() {
   const [clients, setClients] = useKV<Client[]>('bioemm-clients', [])
   const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
+  const [products, setProducts] = useKV<Product[]>('bioemm-products', [])
+  const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
   
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const [dosificationFormOpen, setDosificationFormOpen] = useState(false)
+  const [productFormOpen, setProductFormOpen] = useState(false)
+  const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | undefined>()
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>()
+  const [adjustmentType, setAdjustmentType] = useState<'entry' | 'exit' | 'adjustment'>('entry')
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('map')
 
   const clientsList = clients || []
   const dosificationsList = dosifications || []
+  const productsList = products || []
+  const stockMovementsList = stockMovements || []
 
   const handleCreateClient = (clientData: Omit<Client, 'id' | 'createdAt'>) => {
     const newClient: Client = {
@@ -67,14 +80,94 @@ function App() {
     setDosificationFormOpen(true)
   }
 
+  const handleCreateProduct = (productData: Omit<Product, 'id' | 'createdAt'>) => {
+    if (editingProduct) {
+      setProducts((current) =>
+        (current || []).map((p) =>
+          p.id === editingProduct.id
+            ? { ...productData, id: editingProduct.id, createdAt: editingProduct.createdAt }
+            : p
+        )
+      )
+      toast.success(`Producto ${productData.name} actualizado`)
+      setEditingProduct(undefined)
+    } else {
+      const newProduct: Product = {
+        ...productData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString()
+      }
+      
+      setProducts((current) => [...(current || []), newProduct])
+      toast.success(`Producto ${newProduct.name} agregado al inventario`)
+    }
+    
+    setProductFormOpen(false)
+  }
+
+  const handleDeleteProduct = (productId: string) => {
+    const product = productsList.find(p => p.id === productId)
+    if (!product) return
+
+    if (confirm(`¿Eliminar producto ${product.name} del inventario?`)) {
+      setProducts((current) => (current || []).filter(p => p.id !== productId))
+      toast.success('Producto eliminado')
+    }
+  }
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product)
+    setProductFormOpen(true)
+  }
+
+  const handleAdjustStock = (product: Product, type: 'entry' | 'exit') => {
+    setSelectedProduct(product)
+    setAdjustmentType(type)
+    setStockAdjustmentOpen(true)
+  }
+
+  const handleStockMovement = (movementData: Omit<StockMovement, 'id' | 'createdAt'>) => {
+    const newMovement: StockMovement = {
+      ...movementData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    }
+    
+    setStockMovements((current) => [...(current || []), newMovement])
+    
+    setProducts((current) =>
+      (current || []).map((p) =>
+        p.id === movementData.productId
+          ? { 
+              ...p, 
+              currentStock: movementData.newStock,
+              lastRestockDate: movementData.type === 'entry' ? new Date().toISOString() : p.lastRestockDate
+            }
+          : p
+      )
+    )
+    
+    const actionText = movementData.type === 'entry' ? 'Entrada' : movementData.type === 'exit' ? 'Salida' : 'Ajuste'
+    toast.success(`${actionText} de stock registrada`)
+  }
+
   const filteredClients = clientsList.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.cropType.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const filteredProducts = productsList.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
   const totalHectares = clientsList.reduce((sum, client) => sum + client.hectares, 0)
   const activeClients = clientsList.filter(c => c.status === 'Activo').length
+  const lowStockProducts = productsList.filter(p => p.currentStock <= p.minStock).length
+  const criticalStockProducts = productsList.filter(p => p.currentStock <= p.minStock * 0.5).length
+  const totalInventoryValue = productsList.reduce((sum, p) => sum + (p.currentStock * (p.costPerUnit || 0)), 0)
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,7 +189,7 @@ function App() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -141,6 +234,33 @@ function App() {
               </p>
             </CardContent>
           </Card>
+
+          <Card className={criticalStockProducts > 0 ? 'border-red-300 bg-red-50' : lowStockProducts > 0 ? 'border-yellow-300 bg-yellow-50' : ''}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Package size={20} />
+                Inventario
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{productsList.length}</div>
+              <div className="flex items-center gap-2 mt-1">
+                {criticalStockProducts > 0 ? (
+                  <Badge className="bg-red-600 text-white flex items-center gap-1">
+                    <WarningCircle weight="fill" size={14} />
+                    {criticalStockProducts} crítico{criticalStockProducts > 1 ? 's' : ''}
+                  </Badge>
+                ) : lowStockProducts > 0 ? (
+                  <Badge className="bg-yellow-600 text-white flex items-center gap-1">
+                    <WarningCircle weight="fill" size={14} />
+                    {lowStockProducts} bajo{lowStockProducts > 1 ? 's' : ''}
+                  </Badge>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Stock normal</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -152,24 +272,45 @@ function App() {
               </TabsTrigger>
               <TabsTrigger value="list" className="flex items-center gap-2">
                 <Users size={18} />
-                Lista
+                Clientes
               </TabsTrigger>
               <TabsTrigger value="dosifications" className="flex items-center gap-2">
                 <Flask size={18} />
                 Dosificaciones
               </TabsTrigger>
+              <TabsTrigger value="inventory" className="flex items-center gap-2">
+                <Package size={18} />
+                Inventario
+                {lowStockProducts > 0 && (
+                  <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center bg-red-600">
+                    {lowStockProducts}
+                  </Badge>
+                )}
+              </TabsTrigger>
             </TabsList>
 
-            {(activeTab === 'list' || activeTab === 'dosifications') && (
+            {(activeTab === 'list' || activeTab === 'dosifications' || activeTab === 'inventory') && (
               <div className="relative w-full sm:w-80">
                 <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                 <Input
-                  placeholder="Buscar clientes..."
+                  placeholder={
+                    activeTab === 'inventory' ? 'Buscar productos...' : 'Buscar clientes...'
+                  }
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
+            )}
+
+            {activeTab === 'inventory' && (
+              <Button onClick={() => {
+                setEditingProduct(undefined)
+                setProductFormOpen(true)
+              }} className="bg-accent hover:bg-accent/90">
+                <Plus className="mr-2" weight="bold" />
+                Nuevo Producto
+              </Button>
             )}
           </div>
 
@@ -271,6 +412,60 @@ function App() {
               </div>
             )}
           </TabsContent>
+
+          <TabsContent value="inventory" className="space-y-6">
+            {lowStockProducts > 0 && (
+              <Card className={criticalStockProducts > 0 ? 'border-red-300 bg-red-50' : 'border-yellow-300 bg-yellow-50'}>
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3">
+                    <WarningCircle 
+                      size={32} 
+                      weight="fill" 
+                      className={criticalStockProducts > 0 ? 'text-red-600' : 'text-yellow-600'}
+                    />
+                    <div>
+                      <p className={`font-semibold ${criticalStockProducts > 0 ? 'text-red-800' : 'text-yellow-800'}`}>
+                        {criticalStockProducts > 0 ? '¡Alerta de Stock Crítico!' : 'Alerta de Stock Bajo'}
+                      </p>
+                      <p className={`text-sm ${criticalStockProducts > 0 ? 'text-red-700' : 'text-yellow-700'}`}>
+                        {criticalStockProducts > 0 
+                          ? `${criticalStockProducts} producto${criticalStockProducts > 1 ? 's' : ''} en nivel crítico. `
+                          : `${lowStockProducts} producto${lowStockProducts > 1 ? 's' : ''} por debajo del stock mínimo. `}
+                        Considera realizar un reabastecimiento.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {totalInventoryValue > 0 && (
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Valor Total del Inventario</p>
+                      <p className="text-3xl font-bold font-mono text-primary">
+                        ${totalInventoryValue.toFixed(2)}
+                      </p>
+                    </div>
+                    <Package size={48} className="text-primary opacity-20" weight="duotone" />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <ProductList
+              products={filteredProducts}
+              onEditProduct={handleEditProduct}
+              onDeleteProduct={handleDeleteProduct}
+              onAdjustStock={handleAdjustStock}
+            />
+
+            {productsList.length > 0 && (
+              <StockHistory movements={stockMovementsList} />
+            )}
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -285,6 +480,24 @@ function App() {
         onOpenChange={setDosificationFormOpen}
         onSubmit={handleCreateDosification}
         client={selectedClient}
+      />
+
+      <ProductForm
+        open={productFormOpen}
+        onOpenChange={(open) => {
+          setProductFormOpen(open)
+          if (!open) setEditingProduct(undefined)
+        }}
+        onSubmit={handleCreateProduct}
+        editProduct={editingProduct}
+      />
+
+      <StockAdjustmentForm
+        open={stockAdjustmentOpen}
+        onOpenChange={setStockAdjustmentOpen}
+        product={selectedProduct}
+        type={adjustmentType}
+        onSubmit={handleStockMovement}
       />
     </div>
   )
