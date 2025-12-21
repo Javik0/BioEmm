@@ -75,6 +75,96 @@ function App() {
     toast.success('Dosificación registrada correctamente')
   }
 
+  const handleApplyDosification = (dosification: Dosification) => {
+    if (dosification.status === 'Aplicada' || dosification.status === 'Completada') {
+      toast.error('Esta dosificación ya fue aplicada')
+      return
+    }
+
+    const stockIssues: string[] = []
+    
+    dosification.products.forEach(dosProduct => {
+      const product = productsList.find(p => p.id === dosProduct.productId)
+      if (!product) {
+        stockIssues.push(`${dosProduct.productName}: Producto no encontrado en inventario`)
+      } else if (product.currentStock < dosProduct.quantity) {
+        stockIssues.push(
+          `${dosProduct.productName}: Stock insuficiente (Disponible: ${product.currentStock} ${product.unit}, Requerido: ${dosProduct.quantity} ${dosProduct.unit})`
+        )
+      }
+    })
+
+    if (stockIssues.length > 0) {
+      toast.error(
+        <div>
+          <p className="font-semibold">No se puede aplicar la dosificación:</p>
+          <ul className="mt-2 text-xs space-y-1">
+            {stockIssues.map((issue, idx) => (
+              <li key={idx}>• {issue}</li>
+            ))}
+          </ul>
+        </div>
+      )
+      return
+    }
+
+    if (!confirm(`¿Aplicar dosificación para ${dosification.clientName}? Se descontará el stock automáticamente.`)) {
+      return
+    }
+
+    dosification.products.forEach(dosProduct => {
+      const product = productsList.find(p => p.id === dosProduct.productId)
+      if (!product) return
+
+      const newStock = product.currentStock - dosProduct.quantity
+
+      const movement: StockMovement = {
+        id: Date.now().toString() + Math.random(),
+        productId: product.id,
+        productName: product.name,
+        type: 'exit',
+        quantity: dosProduct.quantity,
+        previousStock: product.currentStock,
+        newStock: newStock,
+        reason: `Dosificación aplicada - Cliente: ${dosification.clientName}`,
+        relatedTo: {
+          type: 'dosification',
+          id: dosification.id,
+          reference: `Dosificación ${dosification.clientName} - ${dosProduct.quantity} ${dosProduct.unit}`
+        },
+        createdAt: new Date().toISOString()
+      }
+
+      setStockMovements((current) => [...(current || []), movement])
+    })
+
+    setProducts((current) =>
+      (current || []).map((p) => {
+        const dosProduct = dosification.products.find(dp => dp.productId === p.id)
+        if (dosProduct) {
+          return {
+            ...p,
+            currentStock: p.currentStock - dosProduct.quantity
+          }
+        }
+        return p
+      })
+    )
+
+    setDosifications((current) =>
+      (current || []).map((d) =>
+        d.id === dosification.id ? { ...d, status: 'Aplicada' as const } : d
+      )
+    )
+
+    toast.success(
+      <div>
+        <p className="font-semibold">Dosificación aplicada correctamente</p>
+        <p className="text-xs mt-1">Stock descontado del inventario</p>
+      </div>
+    )
+  }
+
   const openDosificationForm = (client: Client) => {
     setSelectedClient(client)
     setDosificationFormOpen(true)
@@ -356,7 +446,9 @@ function App() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {dosificationsList.map((dosification) => (
+                {dosificationsList
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .map((dosification) => (
                   <Card key={dosification.id}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -370,9 +462,30 @@ function App() {
                             })}
                           </p>
                         </div>
-                        <Badge variant={dosification.status === 'Completada' ? 'default' : 'secondary'}>
-                          {dosification.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={
+                            dosification.status === 'Aplicada' ? 'default' : 
+                            dosification.status === 'Completada' ? 'default' : 
+                            'secondary'
+                          }
+                          className={
+                            dosification.status === 'Aplicada' ? 'bg-green-600' :
+                            dosification.status === 'Completada' ? 'bg-blue-600' :
+                            ''
+                          }>
+                            {dosification.status}
+                          </Badge>
+                          {dosification.status === 'Pendiente' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleApplyDosification(dosification)}
+                              className="bg-accent hover:bg-accent/90"
+                            >
+                              <Flask className="mr-1" size={16} weight="bold" />
+                              Aplicar
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -389,14 +502,33 @@ function App() {
                         <div className="border-t pt-3 mt-3">
                           <p className="text-sm font-semibold mb-2">Productos Aplicados:</p>
                           <div className="space-y-2">
-                            {dosification.products.map((product, idx) => (
-                              <div key={idx} className="flex justify-between text-sm bg-muted p-2 rounded">
-                                <span>{product.productName}</span>
-                                <span className="font-mono font-semibold">
-                                  {product.quantity} {product.unit}
-                                </span>
-                              </div>
-                            ))}
+                            {dosification.products.map((product, idx) => {
+                              const inventoryProduct = productsList.find(p => p.id === product.productId)
+                              const hasStock = inventoryProduct && inventoryProduct.currentStock >= product.quantity
+                              
+                              return (
+                                <div 
+                                  key={idx} 
+                                  className={`flex justify-between items-center text-sm p-2 rounded ${
+                                    dosification.status === 'Pendiente' && !hasStock 
+                                      ? 'bg-red-100 border border-red-300' 
+                                      : 'bg-muted'
+                                  }`}
+                                >
+                                  <span className="flex items-center gap-2">
+                                    {product.productName}
+                                    {dosification.status === 'Pendiente' && !hasStock && (
+                                      <Badge variant="destructive" className="text-xs">
+                                        Sin stock
+                                      </Badge>
+                                    )}
+                                  </span>
+                                  <span className="font-mono font-semibold">
+                                    {product.quantity} {product.unit}
+                                  </span>
+                                </div>
+                              )
+                            })}
                           </div>
                         </div>
 
@@ -480,6 +612,7 @@ function App() {
         onOpenChange={setDosificationFormOpen}
         onSubmit={handleCreateDosification}
         client={selectedClient}
+        products={productsList}
       />
 
       <ProductForm

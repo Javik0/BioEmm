@@ -27,11 +27,17 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Success criteria**: Todos los clientes visibles en mapa, marcadores interactivos, navegación fluida
 
 ### Sistema de Dosificaciones
-- **Functionality**: Calculadora que genera recomendaciones de productos según hectáreas, cultivo y tipo de aplicación
-- **Purpose**: Estandarizar prescripciones técnicas y optimizar uso de productos
+- **Functionality**: Calculadora que genera recomendaciones de productos según hectáreas, cultivo y tipo de aplicación, conectada directamente con el inventario
+- **Purpose**: Estandarizar prescripciones técnicas, optimizar uso de productos, y descontar automáticamente del inventario al aplicar
 - **Trigger**: Botón "Nueva Dosificación" desde ficha de cliente
-- **Progression**: Seleccionar cliente → Ingresar hectáreas → Seleccionar cultivo → Elegir productos → Sistema calcula cantidades → Guardar dosificación → Genera registro auditable
-- **Success criteria**: Cálculos precisos, historial de dosificaciones por cliente, exportable
+- **Progression**: Seleccionar cliente → Ingresar hectáreas → Seleccionar productos del inventario → Sistema muestra stock disponible → Calcular cantidades → Guardar dosificación como "Pendiente" → Aplicar dosificación → Stock descontado automáticamente → Estado cambia a "Aplicada" → Movimientos registrados en historial
+- **Success criteria**: 
+  - Cálculos precisos con validación de stock en tiempo real
+  - Advertencias visuales si stock insuficiente
+  - Historial de dosificaciones por cliente con estados (Pendiente/Aplicada/Completada)
+  - Descuento automático de inventario al aplicar
+  - Trazabilidad completa: cada salida vinculada a dosificación específica
+  - Imposibilidad de aplicar dosificación si no hay stock suficiente
 
 ### Gestión de Inventario de Productos
 - **Functionality**: Sistema completo de inventario con catálogo de productos, control de stock actual, mínimos y máximos, categorización, costeo, y alertas automáticas
@@ -61,7 +67,9 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 
 ## Edge Case Handling
 - **Sin ubicación GPS**: Permitir registro sin coordenadas, marcar como "pendiente georreferenciación"
-- **Dosificación sin stock**: Alertar si producto no está disponible, permitir guardar como "pendiente"
+- **Dosificación sin stock**: Sistema previene creación si productos seleccionados exceden stock disponible, muestra advertencia visual en tiempo real
+- **Dosificación pendiente sin stock**: Si al momento de aplicar no hay stock suficiente, se bloquea la aplicación y se muestra detalle de faltantes
+- **Productos eliminados del inventario**: Dosificaciones antiguas conservan nombres de productos eliminados para auditoría
 - **Duplicados**: Validar nombre+teléfono antes de crear, sugerir cliente existente
 - **Datos incompletos**: Validación de campos mínimos, permitir guardado parcial como "borrador"
 - **Sin conexión (futuro PWA)**: Modo offline con sincronización posterior
@@ -69,6 +77,7 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Alertas de reorden**: Sistema automático de alertas cuando stock <= mínimo, criticidad cuando stock <= mínimo * 0.5
 - **Productos sin costo**: Permitir productos sin costo unitario, calcular valor de inventario solo para productos con precio
 - **Movimientos sin referencia**: Permitir movimientos manuales sin referencia obligatoria para flexibilidad
+- **Dosificaciones aplicadas**: Una vez aplicadas, no se pueden editar ni revertir (solo marcar como completada), garantiza integridad del historial
 
 ## Design Direction
 BioEmm debe transmitir **confianza técnica y profesionalismo agroindustrial**. El diseño refleja la naturaleza del negocio (agricultura, crecimiento, precisión) con paleta terrenal/vegetal, pero manteniendo sofisticación empresarial. Espacios generosos, tipografía clara, iconografía funcional.
