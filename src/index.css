@@ -1,1 +1,13 @@
 /* This is where custom CSS goes */
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
