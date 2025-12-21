@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Client } from '@/types'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Globe, MapTrifold } from '@phosphor-icons/react'
 
 interface SimpleMapProps {
   clients: Client[]
@@ -64,6 +66,9 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
   const selectedMarkerRef = useRef<L.Marker | null>(null)
+  const baseLayersRef = useRef<{ osm: L.TileLayer; satellite: L.TileLayer } | null>(null)
+  
+  const [mapType, setMapType] = useState<'osm' | 'satellite'>('osm')
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -77,11 +82,24 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
       dragging: true
     })
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
       minZoom: 5
-    }).addTo(map)
+    })
+
+    const satelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+      attribution: '&copy; Google',
+      maxZoom: 20,
+      minZoom: 5
+    })
+
+    osmLayer.addTo(map)
+
+    baseLayersRef.current = {
+      osm: osmLayer,
+      satellite: satelliteLayer
+    }
 
     if (onMapClick) {
       map.on('click', (e) => {
@@ -96,6 +114,18 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
       mapRef.current = null
     }
   }, [onMapClick])
+
+  useEffect(() => {
+    if (!mapRef.current || !baseLayersRef.current) return
+
+    if (mapType === 'osm') {
+      mapRef.current.removeLayer(baseLayersRef.current.satellite)
+      mapRef.current.addLayer(baseLayersRef.current.osm)
+    } else {
+      mapRef.current.removeLayer(baseLayersRef.current.osm)
+      mapRef.current.addLayer(baseLayersRef.current.satellite)
+    }
+  }, [mapType])
 
   useEffect(() => {
     if (!mapRef.current) return
@@ -180,6 +210,27 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
     <Card className="relative w-full h-[600px] overflow-hidden">
       <div ref={mapContainerRef} className="w-full h-full" />
       
+      <div className="absolute top-4 right-4 z-[1000] flex gap-2">
+        <Button
+          size="sm"
+          variant={mapType === 'osm' ? 'default' : 'outline'}
+          onClick={() => setMapType('osm')}
+          className={mapType === 'osm' ? 'bg-primary shadow-lg' : 'bg-white/95 backdrop-blur shadow-md'}
+        >
+          <MapTrifold className="mr-2" size={18} weight={mapType === 'osm' ? 'fill' : 'regular'} />
+          Mapa
+        </Button>
+        <Button
+          size="sm"
+          variant={mapType === 'satellite' ? 'default' : 'outline'}
+          onClick={() => setMapType('satellite')}
+          className={mapType === 'satellite' ? 'bg-primary shadow-lg' : 'bg-white/95 backdrop-blur shadow-md'}
+        >
+          <Globe className="mr-2" size={18} weight={mapType === 'satellite' ? 'fill' : 'regular'} />
+          Satélite
+        </Button>
+      </div>
+
       <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur p-3 rounded-lg shadow-lg text-xs space-y-2 z-[1000] border border-gray-200">
         <div className="font-semibold mb-2 text-gray-700">Leyenda de Cultivos</div>
         <div className="flex items-center gap-2">

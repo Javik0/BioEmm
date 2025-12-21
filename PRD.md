@@ -20,11 +20,16 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Success criteria**: Cliente guardado correctamente con coordenadas GPS y visible en el mapa interactivo
 
 ### Mapa Interactivo de Clientes
-- **Functionality**: Visualización geográfica de todos los clientes con marcadores clicables
-- **Purpose**: Optimizar rutas de visita, identificar zonas de alta concentración, planificar territorio
+- **Functionality**: Visualización geográfica de todos los clientes con marcadores clicables, soporte para múltiples capas base (OpenStreetMap y Google Satellite), zoom dinámico, y navegación fluida
+- **Purpose**: Optimizar rutas de visita, identificar zonas de alta concentración, planificar territorio, visualizar terrenos reales mediante vista satelital
 - **Trigger**: Vista por defecto del módulo "Clientes"
-- **Progression**: Cargar mapa → Renderizar marcadores → Click marcador → Ver ficha cliente → Opción de editar/dosificar
-- **Success criteria**: Todos los clientes visibles en mapa, marcadores interactivos, navegación fluida
+- **Progression**: Cargar mapa → Seleccionar capa base (Mapa/Satélite) → Renderizar marcadores → Click marcador → Ver ficha cliente → Opción de editar/dosificar
+- **Success criteria**: 
+  - Todos los clientes visibles en mapa con marcadores interactivos
+  - Cambio fluido entre capas base sin perder posición/zoom
+  - Vista satelital de alta resolución para inspección de terrenos
+  - Navegación suave con zoom, arrastre y click funcionando perfectamente
+  - Controles de capa visibles y accesibles en la interfaz
 
 ### Sistema de Dosificaciones
 - **Functionality**: Calculadora que genera recomendaciones de productos según hectáreas, cultivo y tipo de aplicación, conectada directamente con el inventario
@@ -158,7 +163,7 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - **ScrollArea**: Listas largas de clientes
 
 **Customizations**:
-- **MapView Component**: Integración de mapa interactivo con Leaflet/MapLibre (custom, no en Shadcn)
+- **MapView Component**: Integración de mapa interactivo con Leaflet, capas base intercambiables (OpenStreetMap estándar y Google Satellite de alta resolución)
 - **DosificationCalculator**: Componente especializado con inputs de hectáreas y matriz de productos
 - **ClientMarker**: Marcador de mapa personalizado con colores según tipo de cultivo
 
@@ -169,6 +174,8 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 
 **Icon Selection (Phosphor Icons)**:
 - MapPin: Ubicaciones de clientes
+- MapTrifold: Vista de mapa estándar, botón de capa base
+- Globe: Vista satelital, botón de capa base
 - Plus/PlusCircle: Nuevo cliente, nueva dosificación, nuevo producto
 - Flask: Dosificaciones, productos químicos
 - ChartLine/ChartBar/ChartPieSlice: Reportes, estadísticas, gráficos de consumo (área, barras, circular)
