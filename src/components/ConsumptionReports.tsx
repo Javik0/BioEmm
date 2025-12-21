@@ -16,11 +16,13 @@ import {
   Package,
   Users,
   CalendarBlank,
-  CaretDown
+  CaretDown,
+  ChartPieSlice
 } from '@phosphor-icons/react'
-import { format, startOfWeek, startOfMonth, startOfQuarter, startOfYear, subDays, subMonths, isWithinInterval, parseISO, endOfDay, startOfDay } from 'date-fns'
+import { format, startOfWeek, startOfMonth, startOfQuarter, startOfYear, subDays, subMonths, isWithinInterval, parseISO, endOfDay, startOfDay, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface ConsumptionReportsProps {
   clients: Client[]
@@ -217,6 +219,87 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
 
   const maxClientValue = Math.max(...consumptionByClient.map(c => c.totalValue), 1)
   const maxProductQuantity = Math.max(...consumptionByProduct.map(p => p.totalQuantity), 1)
+
+  const timeSeriesData = useMemo(() => {
+    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    
+    let intervals: Date[]
+    let formatString: string
+    
+    if (daysDiff <= 31) {
+      intervals = eachDayOfInterval({ start: startDate, end: endDate })
+      formatString = 'dd MMM'
+    } else if (daysDiff <= 90) {
+      intervals = eachWeekOfInterval({ start: startDate, end: endDate })
+      formatString = 'dd MMM'
+    } else {
+      intervals = eachMonthOfInterval({ start: startDate, end: endDate })
+      formatString = 'MMM yyyy'
+    }
+
+    return intervals.map(date => {
+      const nextDate = new Date(date)
+      if (daysDiff <= 31) {
+        nextDate.setDate(nextDate.getDate() + 1)
+      } else if (daysDiff <= 90) {
+        nextDate.setDate(nextDate.getDate() + 7)
+      } else {
+        nextDate.setMonth(nextDate.getMonth() + 1)
+      }
+
+      const movementsInPeriod = filteredMovements.filter(m => {
+        const movementDate = parseISO(m.createdAt)
+        return movementDate >= date && movementDate < nextDate
+      })
+
+      const value = movementsInPeriod.reduce((sum, m) => {
+        const product = products.find(p => p.id === m.productId)
+        return sum + ((product?.costPerUnit || 0) * m.quantity)
+      }, 0)
+
+      const quantity = movementsInPeriod.reduce((sum, m) => sum + m.quantity, 0)
+
+      return {
+        date: format(date, formatString, { locale: es }),
+        fullDate: date,
+        value: parseFloat(value.toFixed(2)),
+        quantity: parseFloat(quantity.toFixed(2)),
+        movements: movementsInPeriod.length
+      }
+    })
+  }, [filteredMovements, startDate, endDate, products])
+
+  const categoryData = useMemo(() => {
+    const categoryMap = new Map<string, { value: number; quantity: number }>()
+    
+    filteredMovements.forEach(movement => {
+      const product = products.find(p => p.id === movement.productId)
+      if (!product) return
+      
+      const value = (product.costPerUnit || 0) * movement.quantity
+      const existing = categoryMap.get(product.category) || { value: 0, quantity: 0 }
+      
+      categoryMap.set(product.category, {
+        value: existing.value + value,
+        quantity: existing.quantity + movement.quantity
+      })
+    })
+
+    return Array.from(categoryMap.entries()).map(([name, data]) => ({
+      name,
+      value: parseFloat(data.value.toFixed(2)),
+      quantity: parseFloat(data.quantity.toFixed(2))
+    })).sort((a, b) => b.value - a.value)
+  }, [filteredMovements, products])
+
+  const COLORS = [
+    'oklch(0.55 0.15 145)',
+    'oklch(0.65 0.18 50)',
+    'oklch(0.45 0.08 60)',
+    'oklch(0.50 0.12 240)',
+    'oklch(0.60 0.10 180)',
+    'oklch(0.70 0.20 30)'
+  ]
 
   const handleExport = () => {
     const csvRows = [
@@ -553,6 +636,208 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
           </CardContent>
         </Card>
       </div>
+
+      {filteredMovements.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <ChartLine size={24} weight="duotone" className="text-primary" />
+                  <div>
+                    <CardTitle>Tendencia de Consumo en el Tiempo</CardTitle>
+                    <CardDescription>Valor consumido por período</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={timeSeriesData}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="oklch(0.55 0.15 145)" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="oklch(0.55 0.15 145)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.90 0.01 145)" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: 'oklch(0.50 0.03 145)', fontSize: 12 }}
+                      tickLine={{ stroke: 'oklch(0.90 0.01 145)' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: 'oklch(0.50 0.03 145)', fontSize: 12 }}
+                      tickLine={{ stroke: 'oklch(0.90 0.01 145)' }}
+                      tickFormatter={(value) => `$${value}`}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'oklch(1 0 0)',
+                        border: '1px solid oklch(0.90 0.01 145)',
+                        borderRadius: '0.5rem',
+                        fontSize: '13px'
+                      }}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Valor']}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="oklch(0.55 0.15 145)" 
+                      strokeWidth={3}
+                      fill="url(#colorValue)"
+                      animationDuration={800}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <ChartBar size={24} weight="duotone" className="text-accent" />
+                  <div>
+                    <CardTitle>Movimientos por Período</CardTitle>
+                    <CardDescription>Cantidad total consumida</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={timeSeriesData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.90 0.01 145)" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: 'oklch(0.50 0.03 145)', fontSize: 12 }}
+                      tickLine={{ stroke: 'oklch(0.90 0.01 145)' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: 'oklch(0.50 0.03 145)', fontSize: 12 }}
+                      tickLine={{ stroke: 'oklch(0.90 0.01 145)' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'oklch(1 0 0)',
+                        border: '1px solid oklch(0.90 0.01 145)',
+                        borderRadius: '0.5rem',
+                        fontSize: '13px'
+                      }}
+                      formatter={(value: number, name: string) => [
+                        name === 'quantity' ? value.toFixed(2) : value,
+                        name === 'quantity' ? 'Cantidad' : 'Movimientos'
+                      ]}
+                    />
+                    <Bar dataKey="quantity" fill="oklch(0.65 0.18 50)" radius={[8, 8, 0, 0]} animationDuration={800} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <ChartPieSlice size={24} weight="duotone" className="text-secondary" />
+                  <div>
+                    <CardTitle>Distribución por Categoría</CardTitle>
+                    <CardDescription>Consumo por tipo de producto</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        animationDuration={800}
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'oklch(1 0 0)',
+                          border: '1px solid oklch(0.90 0.01 145)',
+                          borderRadius: '0.5rem',
+                          fontSize: '13px'
+                        }}
+                        formatter={(value: number) => [`$${value.toFixed(2)}`, 'Valor']}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  
+                  <div className="flex-1 space-y-2">
+                    {categoryData.map((cat, index) => (
+                      <div key={cat.name} className="flex items-center justify-between p-2 rounded-lg bg-muted">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="text-sm font-medium">{cat.name}</span>
+                        </div>
+                        <span className="text-sm font-mono font-bold">${cat.value.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <TrendUp size={24} weight="duotone" className="text-primary" />
+                  <div>
+                    <CardTitle>Top 5 Productos</CardTitle>
+                    <CardDescription>Productos más consumidos en valor</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={consumptionByProduct.slice(0, 5)} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.90 0.01 145)" />
+                    <XAxis 
+                      type="number"
+                      tick={{ fill: 'oklch(0.50 0.03 145)', fontSize: 12 }}
+                      tickLine={{ stroke: 'oklch(0.90 0.01 145)' }}
+                      tickFormatter={(value) => `$${value}`}
+                    />
+                    <YAxis 
+                      type="category"
+                      dataKey="productName" 
+                      tick={{ fill: 'oklch(0.50 0.03 145)', fontSize: 12 }}
+                      tickLine={{ stroke: 'oklch(0.90 0.01 145)' }}
+                      width={120}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'oklch(1 0 0)',
+                        border: '1px solid oklch(0.90 0.01 145)',
+                        borderRadius: '0.5rem',
+                        fontSize: '13px'
+                      }}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Valor Total']}
+                    />
+                    <Bar dataKey="totalValue" fill="oklch(0.55 0.15 145)" radius={[0, 8, 8, 0]} animationDuration={800} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

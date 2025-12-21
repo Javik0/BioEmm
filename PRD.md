@@ -59,16 +59,24 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Success criteria**: Cada movimiento registrado con timestamp, stock siempre sincronizado, imposibilidad de stock negativo
 
 ### Reportes de Consumo de Productos
-- **Functionality**: Sistema de reportería que analiza consumo de productos por cliente y período, con filtros avanzados, visualizaciones gráficas, y exportación de datos
-- **Purpose**: Identificar clientes de alto consumo, productos más utilizados, patrones estacionales, y optimizar estrategias comerciales
+- **Functionality**: Sistema de reportería que analiza consumo de productos por cliente y período, con filtros avanzados, visualizaciones gráficas interactivas en tiempo real, y exportación de datos
+- **Purpose**: Identificar clientes de alto consumo, productos más utilizados, patrones estacionales, y optimizar estrategias comerciales mediante análisis visual de tendencias
 - **Trigger**: Tab "Reportes" en navegación principal
-- **Progression**: Acceder a Reportes → Seleccionar período (última semana/mes/trimestre/año/personalizado) → Filtrar por cliente/producto/categoría → Ver tabla detallada de consumo → Explorar gráficos (consumo por cliente, productos más usados, tendencias temporales) → Exportar datos
+- **Progression**: Acceder a Reportes → Seleccionar período (última semana/mes/trimestre/año/personalizado) → Filtrar por cliente/producto/categoría → Visualizar gráficos interactivos → Ver tabla detallada de consumo → Exportar datos
 - **Success criteria**: 
-  - Filtros dinámicos con actualización instantánea
+  - Filtros dinámicos con actualización instantánea de todos los gráficos
   - Métricas clave: total consumido por producto, gasto por cliente, promedio por hectárea
-  - Visualizaciones claras: gráfico de barras (top clientes), gráfico de líneas (tendencias), distribución por categoría
+  - Visualizaciones interactivas en tiempo real:
+    - Gráfico de área: Tendencia de valor consumido en el tiempo
+    - Gráfico de barras temporales: Cantidad consumida por período
+    - Gráfico circular (pie): Distribución de consumo por categoría de producto
+    - Gráfico de barras horizontales: Top 5 productos por valor
+    - Barras horizontales: Top clientes por valor consumido
+  - Adaptación automática del intervalo temporal según período seleccionado (diario, semanal, mensual)
+  - Tooltips informativos en todos los gráficos
   - Datos exportables para análisis externo
   - Identificación de clientes activos vs inactivos en el período
+  - Performance óptima: animaciones suaves (800ms), colores coherentes con la paleta del sistema
 
 ### Dashboard de Clientes
 - **Functionality**: Vista unificada con estadísticas, lista filtrable y acciones rápidas
@@ -163,7 +171,7 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - MapPin: Ubicaciones de clientes
 - Plus/PlusCircle: Nuevo cliente, nueva dosificación, nuevo producto
 - Flask: Dosificaciones, productos químicos
-- ChartLine/ChartBar: Reportes, estadísticas, gráficos de consumo
+- ChartLine/ChartBar/ChartPieSlice: Reportes, estadísticas, gráficos de consumo (área, barras, circular)
 - Users: Módulo de clientes
 - Package: Inventario de productos, stock
 - CalendarCheck: Programación de visitas
@@ -174,7 +182,7 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - ClockCounterClockwise: Historial de movimientos
 - FunnelSimple: Filtros de reportes
 - FileArrowDown/Download: Exportar reportes
-- TrendUp/TrendDown: Tendencias en consumo
+- TrendUp/TrendDown: Tendencias en consumo, gráficos de valor
 
 **Spacing**:
 - Cards: p-6 (24px padding interior)
