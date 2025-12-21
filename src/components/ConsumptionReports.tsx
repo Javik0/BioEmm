@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
 import { 
   ChartBar, 
   ChartLine, 
@@ -13,10 +15,12 @@ import {
   TrendUp,
   Package,
   Users,
-  CalendarBlank
+  CalendarBlank,
+  CaretDown
 } from '@phosphor-icons/react'
-import { format, startOfWeek, startOfMonth, startOfQuarter, startOfYear, subDays, subMonths, isWithinInterval, parseISO } from 'date-fns'
+import { format, startOfWeek, startOfMonth, startOfQuarter, startOfYear, subDays, subMonths, isWithinInterval, parseISO, endOfDay, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 interface ConsumptionReportsProps {
   clients: Client[]
@@ -54,6 +58,8 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
   const [period, setPeriod] = useState<PeriodType>('month')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined)
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined)
 
   const { startDate, endDate } = useMemo(() => {
     const now = new Date()
@@ -68,10 +74,15 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
         return { startDate: startOfYear(now), endDate: now }
       case 'all':
         return { startDate: new Date(2020, 0, 1), endDate: now }
+      case 'custom':
+        return {
+          startDate: customStartDate ? startOfDay(customStartDate) : startOfMonth(now),
+          endDate: customEndDate ? endOfDay(customEndDate) : now
+        }
       default:
         return { startDate: subMonths(now, 1), endDate: now }
     }
-  }, [period])
+  }, [period, customStartDate, customEndDate])
 
   const filteredMovements = useMemo(() => {
     return stockMovements.filter(movement => {
@@ -279,50 +290,199 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
             <CardTitle>Filtros</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Período</label>
-            <Select value={period} onValueChange={(value) => setPeriod(value as PeriodType)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(periodLabels) as PeriodType[]).map(p => (
-                  <SelectItem key={p} value={p}>{periodLabels[p]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Período</label>
+              <Select value={period} onValueChange={(value) => setPeriod(value as PeriodType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(periodLabels) as PeriodType[]).map(p => (
+                    <SelectItem key={p} value={p}>{periodLabels[p]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Cliente</label>
+              <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los Clientes</SelectItem>
+                  {clients.map(client => (
+                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Categoría</label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las Categorías</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Cliente</label>
-            <Select value={selectedClient} onValueChange={setSelectedClient}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los Clientes</SelectItem>
-                {clients.map(client => (
-                  <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {period === 'custom' && (
+            <div className="border-t pt-4">
+              <div className="mb-4">
+                <p className="text-sm font-medium text-foreground mb-2">Rangos Rápidos</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const now = new Date()
+                      setCustomStartDate(subDays(now, 7))
+                      setCustomEndDate(now)
+                    }}
+                  >
+                    Últimos 7 días
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const now = new Date()
+                      setCustomStartDate(subDays(now, 15))
+                      setCustomEndDate(now)
+                    }}
+                  >
+                    Últimos 15 días
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const now = new Date()
+                      setCustomStartDate(subDays(now, 30))
+                      setCustomEndDate(now)
+                    }}
+                  >
+                    Últimos 30 días
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const now = new Date()
+                      setCustomStartDate(subDays(now, 60))
+                      setCustomEndDate(now)
+                    }}
+                  >
+                    Últimos 60 días
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const now = new Date()
+                      setCustomStartDate(subDays(now, 90))
+                      setCustomEndDate(now)
+                    }}
+                  >
+                    Últimos 90 días
+                  </Button>
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Categoría</label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las Categorías</SelectItem>
-                {categories.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <CalendarBlank size={16} />
+                    Fecha de Inicio
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !customStartDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarBlank className="mr-2" size={16} />
+                        {customStartDate ? format(customStartDate, 'PPP', { locale: es }) : 'Seleccionar fecha'}
+                        <CaretDown className="ml-auto" size={16} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={customStartDate}
+                        onSelect={setCustomStartDate}
+                        initialFocus
+                        locale={es}
+                        disabled={(date) => 
+                          date > new Date() || !!(customEndDate && date > customEndDate)
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <CalendarBlank size={16} />
+                    Fecha de Fin
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !customEndDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarBlank className="mr-2" size={16} />
+                        {customEndDate ? format(customEndDate, 'PPP', { locale: es }) : 'Seleccionar fecha'}
+                        <CaretDown className="ml-auto" size={16} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={customEndDate}
+                        onSelect={setCustomEndDate}
+                        initialFocus
+                        locale={es}
+                        disabled={(date) => 
+                          date > new Date() || !!(customStartDate && date < customStartDate)
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              {customStartDate && customEndDate && (
+                <div className="mt-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                  <p className="text-sm font-medium text-primary flex items-center gap-2">
+                    <CalendarBlank size={16} weight="duotone" />
+                    Rango seleccionado: {format(customStartDate, 'PP', { locale: es })} - {format(customEndDate, 'PP', { locale: es })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {Math.ceil((customEndDate.getTime() - customStartDate.getTime()) / (1000 * 60 * 60 * 24))} días de análisis
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -337,7 +497,11 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
           <CardContent>
             <div className="text-2xl font-bold">{periodLabels[period]}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {format(startDate, 'PP', { locale: es })} - {format(endDate, 'PP', { locale: es })}
+              {period === 'custom' && customStartDate && customEndDate ? (
+                `${format(customStartDate, 'PP', { locale: es })} - ${format(customEndDate, 'PP', { locale: es })}`
+              ) : (
+                `${format(startDate, 'PP', { locale: es })} - ${format(endDate, 'PP', { locale: es })}`
+              )}
             </p>
           </CardContent>
         </Card>
