@@ -9,12 +9,13 @@ import { ProductForm } from '@/components/ProductForm'
 import { ProductList } from '@/components/ProductList'
 import { StockAdjustmentForm } from '@/components/StockAdjustmentForm'
 import { StockHistory } from '@/components/StockHistory'
+import { ConsumptionReports } from '@/components/ConsumptionReports'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle, ChartBar } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -377,6 +378,10 @@ function App() {
                   </Badge>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="reports" className="flex items-center gap-2">
+                <ChartBar size={18} />
+                Reportes
+              </TabsTrigger>
             </TabsList>
 
             {(activeTab === 'list' || activeTab === 'dosifications' || activeTab === 'inventory') && (
@@ -597,6 +602,14 @@ function App() {
             {productsList.length > 0 && (
               <StockHistory movements={stockMovementsList} />
             )}
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-4">
+            <ConsumptionReports
+              clients={clientsList}
+              products={productsList}
+              stockMovements={stockMovementsList}
+            />
           </TabsContent>
         </Tabs>
       </main>

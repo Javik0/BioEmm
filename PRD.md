@@ -58,12 +58,31 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Progression**: Seleccionar producto → Elegir tipo de movimiento → Ingresar cantidad → Seleccionar motivo → Agregar referencia → Confirmar → Stock actualizado + movimiento registrado en historial
 - **Success criteria**: Cada movimiento registrado con timestamp, stock siempre sincronizado, imposibilidad de stock negativo
 
+### Reportes de Consumo de Productos
+- **Functionality**: Sistema de reportería que analiza consumo de productos por cliente y período, con filtros avanzados, visualizaciones gráficas, y exportación de datos
+- **Purpose**: Identificar clientes de alto consumo, productos más utilizados, patrones estacionales, y optimizar estrategias comerciales
+- **Trigger**: Tab "Reportes" en navegación principal
+- **Progression**: Acceder a Reportes → Seleccionar período (última semana/mes/trimestre/año/personalizado) → Filtrar por cliente/producto/categoría → Ver tabla detallada de consumo → Explorar gráficos (consumo por cliente, productos más usados, tendencias temporales) → Exportar datos
+- **Success criteria**: 
+  - Filtros dinámicos con actualización instantánea
+  - Métricas clave: total consumido por producto, gasto por cliente, promedio por hectárea
+  - Visualizaciones claras: gráfico de barras (top clientes), gráfico de líneas (tendencias), distribución por categoría
+  - Datos exportables para análisis externo
+  - Identificación de clientes activos vs inactivos en el período
+
 ### Dashboard de Clientes
 - **Functionality**: Vista unificada con estadísticas, lista filtrable y acciones rápidas
 - **Purpose**: Proveer panorama completo del estado comercial y facilitar acceso rápido
 - **Trigger**: Pantalla principal al abrir la app
 - **Progression**: Cargar dashboard → Ver métricas (total clientes, hectáreas gestionadas, inventario) → Filtrar por cultivo/zona → Acceder a cliente específico
 - **Success criteria**: Carga rápida (<2s), búsqueda instantánea, navegación intuitiva
+
+### Dashboard de Reportes
+- **Functionality**: Vista dedicada a análisis de datos con múltiples visualizaciones y filtros interactivos
+- **Purpose**: Facilitar toma de decisiones basada en datos históricos de consumo
+- **Trigger**: Tab "Reportes" en navegación
+- **Progression**: Cargar reportes → Seleccionar filtros → Ver métricas calculadas → Explorar gráficos → Exportar datos
+- **Success criteria**: Cálculos precisos, visualizaciones responsivas, performance óptima con grandes volúmenes de datos
 
 ## Edge Case Handling
 - **Sin ubicación GPS**: Permitir registro sin coordenadas, marcar como "pendiente georreferenciación"
@@ -144,7 +163,7 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - MapPin: Ubicaciones de clientes
 - Plus/PlusCircle: Nuevo cliente, nueva dosificación, nuevo producto
 - Flask: Dosificaciones, productos químicos
-- ChartLine: Reportes, estadísticas
+- ChartLine/ChartBar: Reportes, estadísticas, gráficos de consumo
 - Users: Módulo de clientes
 - Package: Inventario de productos, stock
 - CalendarCheck: Programación de visitas
@@ -153,6 +172,9 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - ArrowDown: Salidas de stock
 - ArrowsClockwise: Ajustes de inventario
 - ClockCounterClockwise: Historial de movimientos
+- FunnelSimple: Filtros de reportes
+- FileArrowDown/Download: Exportar reportes
+- TrendUp/TrendDown: Tendencias en consumo
 
 **Spacing**:
 - Cards: p-6 (24px padding interior)
