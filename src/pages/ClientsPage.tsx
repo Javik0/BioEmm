@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Client, ClientPhoto } from '@/types'
+import { Client } from '@/types'
 import { useClients, ClientForm, ClientList, ClientDetail } from '@/features/clients'
 import { SimpleMap } from '@/components/SimpleMap'
 import { Button } from '@/components/ui/button'
@@ -16,15 +16,6 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showMap, setShowMap] = useState(false)
 
-  const stripUnpersistablePhotos = (photos?: ClientPhoto[]) => {
-    const list = photos || []
-    const persistable = list.filter((p) => typeof p.url === 'string' && !p.url.startsWith('data:'))
-    return {
-      persistable,
-      skippedCount: list.length - persistable.length,
-    }
-  }
-
   const normalizeLocation = (location?: Client['location']) => {
     if (!location) return undefined
     const lat = Number(location.lat)
@@ -38,17 +29,9 @@ export default function ClientsPage() {
   }
 
   const handleCreateClient = (clientData: Omit<Client, 'id' | 'createdAt'>) => {
-    const { persistable: persistablePhotos, skippedCount } = stripUnpersistablePhotos(clientData.photos)
-    if (skippedCount > 0) {
-      toast.warning(
-        'Las fotos no se guardaron aún: ahora mismo se almacenan como base64 y Firestore tiene un límite de 1MiB por cliente. Activa Firebase Storage y las subimos como URLs.'
-      )
-    }
-
     const baseClientData: Omit<Client, 'id' | 'createdAt'> = {
       ...clientData,
       location: normalizeLocation(clientData.location),
-      photos: persistablePhotos.length > 0 ? persistablePhotos : undefined,
     }
 
     const client: Client = editingClient

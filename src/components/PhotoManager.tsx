@@ -15,9 +15,11 @@ import {
   PencilSimple,
   X,
   FloppyDisk,
-  ImageSquare
+  ImageSquare,
+  Spinner
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { uploadClientPhoto, deleteClientPhoto, isStorageUrl } from '@/features/clients/services/storageService'
 
 interface PhotoManagerProps {
   open: boolean
@@ -25,62 +27,74 @@ interface PhotoManagerProps {
   photos: ClientPhoto[]
   onUpdatePhotos: (photos: ClientPhoto[]) => void
   clientName: string
+  clientId: string
 }
 
-export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clientName }: PhotoManagerProps) {
+export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clientName, clientId }: PhotoManagerProps) {
   const [localPhotos, setLocalPhotos] = useState<ClientPhoto[]>(photos)
   const [photoDescription, setPhotoDescription] = useState('')
   const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null)
   const [editDescription, setEditDescription] = useState('')
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
 
-    const fileCount = files.length
-    let processedCount = 0
+    setIsUploading(true)
     const newPhotos: ClientPhoto[] = []
+    let successCount = 0
+    let errorCount = 0
 
-    Array.from(files).forEach((file) => {
+    for (const file of Array.from(files)) {
       if (!file.type.startsWith('image/')) {
         toast.error(`${file.name} no es una imagen válida`)
-        processedCount++
-        return
+        errorCount++
+        continue
       }
 
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`${file.name} es muy grande. Máximo 5MB por imagen`)
-        processedCount++
-        return
+        errorCount++
+        continue
       }
 
-      const reader = new FileReader()
-      reader.onloadend = () => {
+      const photoId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+
+      try {
+        // Subir a Firebase Storage
+        const downloadURL = await uploadClientPhoto(file, clientId, photoId)
+        
         const newPhoto: ClientPhoto = {
-          id: Date.now().toString() + Math.random(),
-          url: reader.result as string,
+          id: photoId,
+          url: downloadURL,
           fileName: file.name,
           description: photoDescription || undefined,
           uploadedAt: new Date().toISOString()
         }
         newPhotos.push(newPhoto)
-        processedCount++
-        
-        if (processedCount === fileCount) {
-          setLocalPhotos((current) => [...current, ...newPhotos])
-          if (fileCount === 1) {
-            toast.success(`Foto "${file.name}" agregada`)
-          } else {
-            toast.success(`${newPhotos.length} fotos agregadas correctamente`)
-          }
-          setPhotoDescription('')
-        }
+        successCount++
+      } catch (error) {
+        console.error('Error subiendo foto:', error)
+        toast.error(`Error al subir "${file.name}"`)
+        errorCount++
       }
-      reader.readAsDataURL(file)
-    })
+    }
+
+    if (newPhotos.length > 0) {
+      setLocalPhotos((current) => [...current, ...newPhotos])
+      if (successCount === 1) {
+        toast.success(`Foto subida correctamente`)
+      } else {
+        toast.success(`${successCount} fotos subidas correctamente`)
+      }
+      setPhotoDescription('')
+    }
+
+    setIsUploading(false)
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -90,9 +104,17 @@ export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clien
     }
   }
 
-  const handleDeletePhoto = (photoId: string) => {
+  const handleDeletePhoto = async (photoId: string) => {
     const photo = localPhotos.find(p => p.id === photoId)
     if (photo && confirm(`¿Eliminar foto "${photo.fileName}"?`)) {
+      // Si es una URL de Storage, eliminar del storage
+      if (isStorageUrl(photo.url)) {
+        try {
+          await deleteClientPhoto(photo.url)
+        } catch (error) {
+          console.warn('No se pudo eliminar del storage:', error)
+        }
+      }
       setLocalPhotos((current) => current.filter(p => p.id !== photoId))
       toast.success('Foto eliminada')
     }
@@ -175,18 +197,38 @@ export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clien
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                     className="flex-1 min-w-[200px]"
+                    disabled={isUploading}
                   >
-                    <UploadSimple size={18} className="mr-2" weight="bold" />
-                    Seleccionar Archivos
+                    {isUploading ? (
+                      <>
+                        <Spinner size={18} className="mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <UploadSimple size={18} className="mr-2" weight="bold" />
+                        Seleccionar Archivos
+                      </>
+                    )}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => cameraInputRef.current?.click()}
                     className="flex-1 min-w-[200px] bg-accent/10 border-accent/30 hover:bg-accent/20"
+                    disabled={isUploading}
                   >
-                    <Camera size={18} className="mr-2" weight="bold" />
-                    Tomar Foto
+                    {isUploading ? (
+                      <>
+                        <Spinner size={18} className="mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Camera size={18} className="mr-2" weight="bold" />
+                        Tomar Foto
+                      </>
+                    )}
                   </Button>
                   <input
                     ref={fileInputRef}

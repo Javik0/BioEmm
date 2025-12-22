@@ -528,6 +528,7 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
           photos={client.photos || []}
           onUpdatePhotos={handleUpdatePhotos}
           clientName={client.name}
+          clientId={client.id}
         />
       )}
     </>
