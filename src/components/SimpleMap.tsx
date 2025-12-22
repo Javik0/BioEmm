@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Client, Dosification, CropType, ClientStatus } from '@/types'
+import { Client, Dosification, CropType, ClientStatus, CROP_TYPES } from '@/types'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,15 +25,28 @@ interface SimpleMapProps {
 }
 
 const getCropColor = (cropType: string) => {
-  const colors: Record<string, string> = {
-    'Flores': '#ec4899',
-    'Hortalizas': '#16a34a',
-    'Frutas': '#f97316',
-    'Granos': '#ca8a04',
-    'Tubérculos': '#b45309',
-    'Otro': '#6b7280'
-  }
-  return colors[cropType] || '#6b7280'
+  const colorPalette = [
+    '#ec4899', '#16a34a', '#f97316', '#ca8a04', '#b45309', '#6366f1',
+    '#8b5cf6', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#f59e0b',
+    '#ef4444', '#f43f5e', '#d946ef', '#a855f7', '#6366f1', '#3b82f6',
+    '#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#22c55e', '#84cc16',
+    '#a3e635', '#eab308', '#facc15', '#fbbf24', '#fb923c', '#f97316',
+    '#ea580c', '#dc2626', '#e11d48', '#be123c', '#9f1239', '#881337',
+    '#7c2d12', '#78350f', '#713f12', '#854d0e', '#a16207', '#4d7c0f',
+    '#365314', '#14532d', '#052e16', '#064e3b', '#134e4a', '#1e293b',
+    '#0f172a', '#1e1b4b', '#312e81', '#3730a3', '#4c1d95', '#581c87',
+    '#5b21b6', '#6b21a8', '#7e22ce', '#86198f', '#a21caf', '#be185d',
+    '#9f1239', '#881337', '#7f1d1d', '#7c2d12', '#78350f', '#713f12',
+    '#365314', '#14532d', '#134e4a', '#164e63', '#1e3a8a', '#1e40af',
+    '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe',
+  ]
+  
+  const hash = cropType.split('').reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc)
+  }, 0)
+  
+  const index = Math.abs(hash) % colorPalette.length
+  return colorPalette[index]
 }
 
 const createCustomIcon = (color: string) => {
@@ -103,7 +116,6 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const [selectedCropTypes, setSelectedCropTypes] = useState<Set<CropType>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClientStatus>>(new Set())
 
-  const cropTypes: CropType[] = ['Flores', 'Hortalizas', 'Frutas', 'Granos', 'Tubérculos', 'Otro']
   const statuses: ClientStatus[] = ['Activo', 'Inactivo', 'Prospecto']
 
   const toggleCropType = (cropType: CropType) => {
@@ -402,21 +414,23 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Por Tipo de Cultivo
             </DropdownMenuLabel>
-            {cropTypes.map((cropType) => (
-              <DropdownMenuCheckboxItem
-                key={cropType}
-                checked={selectedCropTypes.has(cropType)}
-                onCheckedChange={() => toggleCropType(cropType)}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: getCropColor(cropType) }}
-                  />
-                  <span>{cropType}</span>
-                </div>
-              </DropdownMenuCheckboxItem>
-            ))}
+            <div className="max-h-[300px] overflow-y-auto">
+              {CROP_TYPES.map((cropType) => (
+                <DropdownMenuCheckboxItem
+                  key={cropType}
+                  checked={selectedCropTypes.has(cropType)}
+                  onCheckedChange={() => toggleCropType(cropType)}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ background: getCropColor(cropType) }}
+                    />
+                    <span className="text-sm">{cropType}</span>
+                  </div>
+                </DropdownMenuCheckboxItem>
+              ))}
+            </div>
             
             <DropdownMenuSeparator />
             

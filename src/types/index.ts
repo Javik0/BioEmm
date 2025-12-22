@@ -1,10 +1,183 @@
 export type CropType = 
-  | 'Flores' 
-  | 'Hortalizas' 
-  | 'Frutas' 
-  | 'Granos' 
-  | 'Tubérculos'
+  | 'Aguacate'
+  | 'Ajo'
+  | 'Albaricoque'
+  | 'Alcachofa'
+  | 'Alfalfa'
+  | 'Algodón'
+  | 'Almendra'
+  | 'Apio'
+  | 'Arándano'
+  | 'Arroz'
+  | 'Arveja'
+  | 'Avellana'
+  | 'Avena'
+  | 'Banano'
+  | 'Berenjena'
+  | 'Boniato'
+  | 'Brócoli'
+  | 'Cacahuete'
+  | 'Cacao'
+  | 'Café'
+  | 'Calabacín'
+  | 'Calabaza'
+  | 'Caña de azúcar'
+  | 'Cáñamo'
+  | 'Caqui'
+  | 'Cebada'
+  | 'Cebolla'
+  | 'Centeno'
+  | 'Cereza'
+  | 'Chayote'
+  | 'Chile'
+  | 'Cilantro'
+  | 'Ciruela'
+  | 'Clavel'
+  | 'Col'
+  | 'Coliflor'
+  | 'Colza'
+  | 'Dátil'
+  | 'Espárrago'
+  | 'Espinaca'
+  | 'Forraje'
+  | 'Frambuesa'
+  | 'Fresa'
+  | 'Girasol'
+  | 'Granada'
+  | 'Gypsophila'
+  | 'Judía verde'
+  | 'Kiwi'
+  | 'Lechuga'
+  | 'Leguminosas'
+  | 'Lima'
+  | 'Limón'
+  | 'Lúpulo'
+  | 'Maiz'
+  | 'Mandarina'
+  | 'Mango'
+  | 'Manzana'
+  | 'Melocotón'
+  | 'Melón'
+  | 'Mijo'
+  | 'Mora'
+  | 'Ñame'
+  | 'Naranja'
+  | 'Nectarina'
+  | 'Nuez'
+  | 'Oliva'
+  | 'Paraguayo'
+  | 'Patata'
+  | 'Pepino'
+  | 'Pera'
+  | 'Pimiento'
+  | 'Piña'
+  | 'Pistacho'
+  | 'Plátano'
+  | 'Platerina'
+  | 'Pomelo'
+  | 'Remolacha azucarera'
+  | 'Rosa'
+  | 'Sandía'
+  | 'Soja'
+  | 'Tabaco'
+  | 'Tomate de árbol'
+  | 'Tomate de industria'
+  | 'Trigo'
+  | 'Uva de mesa'
+  | 'Uva de vino'
+  | 'Zanahoria'
   | 'Otro'
+
+export const CROP_TYPES: CropType[] = [
+  'Aguacate',
+  'Ajo',
+  'Albaricoque',
+  'Alcachofa',
+  'Alfalfa',
+  'Algodón',
+  'Almendra',
+  'Apio',
+  'Arándano',
+  'Arroz',
+  'Arveja',
+  'Avellana',
+  'Avena',
+  'Banano',
+  'Berenjena',
+  'Boniato',
+  'Brócoli',
+  'Cacahuete',
+  'Cacao',
+  'Café',
+  'Calabacín',
+  'Calabaza',
+  'Caña de azúcar',
+  'Cáñamo',
+  'Caqui',
+  'Cebada',
+  'Cebolla',
+  'Centeno',
+  'Cereza',
+  'Chayote',
+  'Chile',
+  'Cilantro',
+  'Ciruela',
+  'Clavel',
+  'Col',
+  'Coliflor',
+  'Colza',
+  'Dátil',
+  'Espárrago',
+  'Espinaca',
+  'Forraje',
+  'Frambuesa',
+  'Fresa',
+  'Girasol',
+  'Granada',
+  'Gypsophila',
+  'Judía verde',
+  'Kiwi',
+  'Lechuga',
+  'Leguminosas',
+  'Lima',
+  'Limón',
+  'Lúpulo',
+  'Maiz',
+  'Mandarina',
+  'Mango',
+  'Manzana',
+  'Melocotón',
+  'Melón',
+  'Mijo',
+  'Mora',
+  'Ñame',
+  'Naranja',
+  'Nectarina',
+  'Nuez',
+  'Oliva',
+  'Paraguayo',
+  'Patata',
+  'Pepino',
+  'Pera',
+  'Pimiento',
+  'Piña',
+  'Pistacho',
+  'Plátano',
+  'Platerina',
+  'Pomelo',
+  'Remolacha azucarera',
+  'Rosa',
+  'Sandía',
+  'Soja',
+  'Tabaco',
+  'Tomate de árbol',
+  'Tomate de industria',
+  'Trigo',
+  'Uva de mesa',
+  'Uva de vino',
+  'Zanahoria',
+  'Otro'
+]
 
 export type ClientStatus = 'Prospecto' | 'Activo' | 'Inactivo'
 

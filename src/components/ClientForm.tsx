@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Client, CropType, ClientStatus, ClientPhoto } from '@/types'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Client, CropType, ClientStatus, ClientPhoto, CROP_TYPES } from '@/types'
 import { 
   MapPin, 
   X, 
@@ -24,12 +26,15 @@ import {
   Camera,
   Trash,
   Image as ImageIcon,
-  UploadSimple
+  UploadSimple,
+  CaretUpDown,
+  Check
 } from '@phosphor-icons/react'
 import { SimpleMap } from './SimpleMap'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface ClientFormProps {
   open: boolean
@@ -43,7 +48,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [contact, setContact] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [cropType, setCropType] = useState<CropType>('Flores')
+  const [cropType, setCropType] = useState<CropType>('Otro')
   const [hectares, setHectares] = useState('')
   const [status, setStatus] = useState<ClientStatus>('Prospecto')
   const [notes, setNotes] = useState('')
@@ -58,6 +63,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [activeTab, setActiveTab] = useState('basic')
   const [photos, setPhotos] = useState<ClientPhoto[]>([])
   const [photoDescription, setPhotoDescription] = useState('')
+  const [cropTypeOpen, setCropTypeOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -125,7 +131,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     setContact('')
     setPhone('')
     setEmail('')
-    setCropType('Flores')
+    setCropType('Otro')
     setHectares('')
     setStatus('Prospecto')
     setNotes('')
@@ -426,19 +432,47 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                       <Palette size={16} />
                       Tipo de Cultivo *
                     </Label>
-                    <Select value={cropType} onValueChange={(v) => setCropType(v as CropType)}>
-                      <SelectTrigger id="cropType" className="mt-1.5">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Flores">🌹 Flores</SelectItem>
-                        <SelectItem value="Hortalizas">🥬 Hortalizas</SelectItem>
-                        <SelectItem value="Frutas">🍓 Frutas</SelectItem>
-                        <SelectItem value="Granos">🌾 Granos</SelectItem>
-                        <SelectItem value="Tubérculos">🥔 Tubérculos</SelectItem>
-                        <SelectItem value="Otro">🌱 Otro</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Popover open={cropTypeOpen} onOpenChange={setCropTypeOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={cropTypeOpen}
+                          className="w-full justify-between mt-1.5"
+                        >
+                          {cropType || "Seleccionar cultivo..."}
+                          <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar cultivo..." />
+                          <CommandList>
+                            <CommandEmpty>No se encontró el cultivo.</CommandEmpty>
+                            <CommandGroup>
+                              {CROP_TYPES.map((crop) => (
+                                <CommandItem
+                                  key={crop}
+                                  value={crop}
+                                  onSelect={(currentValue) => {
+                                    setCropType(currentValue as CropType)
+                                    setCropTypeOpen(false)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      cropType === crop ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {crop}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <div>
