@@ -97,7 +97,37 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Leaflet + Tailwind: evita que los tiles se escalen por `img { max-width: 100% }` */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-container img {
+  max-width: none !important;
+}
+
 .custom-popup .leaflet-popup-content-wrapper {
   background: white;
   border: 1px solid #e2e8f0;
+}
+
+/* Asegurar que los dropdowns del mapa se muestren sobre Leaflet */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+/* Fix para botones sobre el mapa: asegurar legibilidad */
+.leaflet-container ~ div [data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-content"] {
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-slot="dropdown-menu-content"] [data-slot="dropdown-menu-item"] {
+  color: #1a1a1a !important;
+}
+
+[data-slot="dropdown-menu-content"] [data-slot="dropdown-menu-item"]:hover {
+  background: #f1f5f9 !important;
 }

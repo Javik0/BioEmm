@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // MVP: solo usuarios autenticados pueden leer/escribir.
+    // Luego se refina por organización/rol.
+    match /{document=**} {
+      allow read, write: if signedIn();
+    }
+  }
+}

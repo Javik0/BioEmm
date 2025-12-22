@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Client, Dosification, Product, StockMovement, ClientPhoto } from '@/types'
+import { AuthGate } from '@/components/AuthGate'
+import { useFirestoreClients } from '@/hooks/useFirestoreClients'
 import { ClientForm } from '@/components/ClientForm'
 import { ClientList } from '@/components/ClientList'
 import { ClientDetail } from '@/components/ClientDetail'
@@ -23,7 +25,7 @@ import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 
 function App() {
-  const [clients, setClients] = useKV<Client[]>('bioemm-clients', [])
+  const { clients: clientsList, upsertClient, deleteClient } = useFirestoreClients()
   const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
   const [products, setProducts] = useKV<Product[]>('bioemm-products', [])
   const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
@@ -42,33 +44,63 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('calculator')
 
-  const clientsList = clients || []
   const dosificationsList = dosifications || []
   const productsList = products || []
   const stockMovementsList = stockMovements || []
 
-  const handleCreateClient = (clientData: Omit<Client, 'id' | 'createdAt'>) => {
-    if (editingClient) {
-      setClients((current) =>
-        (current || []).map((c) =>
-          c.id === editingClient.id
-            ? { ...clientData, id: editingClient.id, createdAt: editingClient.createdAt }
-            : c
-        )
-      )
-      toast.success(`Cliente ${clientData.name} actualizado correctamente`)
-      setEditingClient(undefined)
-    } else {
-      const newClient: Client = {
-        ...clientData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString()
-      }
-      
-      setClients((current) => [...(current || []), newClient])
-      toast.success(`Cliente ${newClient.name} agregado correctamente`)
+  const stripUnpersistablePhotos = (photos?: ClientPhoto[]) => {
+    const list = photos || []
+    const persistable = list.filter((p) => typeof p.url === 'string' && !p.url.startsWith('data:'))
+    return {
+      persistable,
+      skippedCount: list.length - persistable.length,
     }
-    setClientFormOpen(false)
+  }
+
+  const normalizeLocation = (location?: Client['location']) => {
+    if (!location) return undefined
+    const lat = Number(location.lat)
+    const lng = Number(location.lng)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return undefined
+    return {
+      lat: parseFloat(lat.toFixed(8)),
+      lng: parseFloat(lng.toFixed(8)),
+      address: location.address,
+    }
+  }
+
+  const handleCreateClient = (clientData: Omit<Client, 'id' | 'createdAt'>) => {
+    const { persistable: persistablePhotos, skippedCount } = stripUnpersistablePhotos(clientData.photos)
+    if (skippedCount > 0) {
+      toast.warning(
+        'Las fotos no se guardaron aún: ahora mismo se almacenan como base64 y Firestore tiene un límite de 1MiB por cliente. Activa Firebase Storage y las subimos como URLs.'
+      )
+    }
+
+    const baseClientData: Omit<Client, 'id' | 'createdAt'> = {
+      ...clientData,
+      location: normalizeLocation(clientData.location),
+      photos: persistablePhotos.length > 0 ? persistablePhotos : undefined,
+    }
+
+    const client: Client = editingClient
+      ? { ...baseClientData, id: editingClient.id, createdAt: editingClient.createdAt }
+      : { ...baseClientData, id: Date.now().toString(), createdAt: new Date().toISOString() }
+
+    void (async () => {
+      try {
+        await upsertClient(client)
+        toast.success(
+          editingClient
+            ? `Cliente ${clientData.name} actualizado correctamente`
+            : `Cliente ${clientData.name} agregado correctamente`
+        )
+        setClientFormOpen(false)
+        setEditingClient(undefined)
+      } catch (err: any) {
+        toast.error(err?.message || 'No se pudo guardar el cliente (Firestore)')
+      }
+    })()
   }
 
   const handleDeleteClient = (clientId: string) => {
@@ -76,8 +108,14 @@ function App() {
     if (!client) return
 
     if (confirm(`¿Eliminar cliente ${client.name}?`)) {
-      setClients((current) => (current || []).filter(c => c.id !== clientId))
-      toast.success('Cliente eliminado')
+      void (async () => {
+        try {
+          await deleteClient(clientId)
+          toast.success('Cliente eliminado')
+        } catch (err: any) {
+          toast.error(err?.message || 'No se pudo eliminar el cliente (Firestore)')
+        }
+      })()
     }
   }
 
@@ -200,18 +238,33 @@ function App() {
   }
 
   const handleUpdatePhotos = (clientId: string, photos: ClientPhoto[]) => {
-    setClients((current) =>
-      (current || []).map((c) =>
-        c.id === clientId
-          ? { ...c, photos: photos.length > 0 ? photos : undefined }
-          : c
+    const existing = clientsList.find((c) => c.id === clientId)
+    if (!existing) return
+
+    const { persistable: persistablePhotos, skippedCount } = stripUnpersistablePhotos(photos)
+    if (skippedCount > 0) {
+      toast.warning(
+        'Esas fotos no se guardaron aún (base64). Activa Firebase Storage para poder subirlas y guardar solo URLs.'
       )
-    )
-    toast.success('Fotos actualizadas correctamente')
-    
-    if (selectedClient && selectedClient.id === clientId) {
-      setSelectedClient({ ...selectedClient, photos: photos.length > 0 ? photos : undefined })
     }
+
+    const updated: Client = {
+      ...existing,
+      photos: persistablePhotos.length > 0 ? persistablePhotos : undefined,
+    }
+
+    void (async () => {
+      try {
+        await upsertClient(updated)
+        toast.success('Fotos actualizadas correctamente')
+
+        if (selectedClient && selectedClient.id === clientId) {
+          setSelectedClient(updated)
+        }
+      } catch (err: any) {
+        toast.error(err?.message || 'No se pudieron guardar las fotos (Firestore)')
+      }
+    })()
   }
 
   const handleCreateProduct = (productData: Omit<Product, 'id' | 'createdAt'>) => {
@@ -314,8 +367,9 @@ function App() {
   const totalInventoryValue = productsList.reduce((sum, p) => sum + (p.currentStock * (p.costPerUnit || 0)), 0)
 
   return (
-    <div className="min-h-screen bg-background">
-      <Toaster />
+    <AuthGate>
+      <div className="min-h-screen bg-background">
+        <Toaster />
       
       <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4">
@@ -739,7 +793,8 @@ function App() {
         onImport={handleImportCatalog}
         existingProducts={productsList}
       />
-    </div>
+      </div>
+    </AuthGate>
   )
 }
 

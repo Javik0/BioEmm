@@ -1,0 +1,14 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // MVP: solo usuarios autenticados pueden leer/escribir.
+    // Luego se refina por organización/rol y rutas (orgs/{orgId}/...).
+    match /{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+  }
+}

@@ -51,18 +51,34 @@ const getCropColor = (cropType: string) => {
 
 const createCustomIcon = (color: string) => {
   const svgIcon = `
-    <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 26 16 26s16-14 16-26c0-8.837-7.163-16-16-16z" 
-            fill="${color}" stroke="white" stroke-width="2"/>
-      <circle cx="16" cy="16" r="6" fill="white"/>
+    <svg width="40" height="56" viewBox="0 0 40 56" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="markerShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+          <feOffset dx="0" dy="3" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.3"/>
+          </feComponentTransfer>
+          <feMerge> 
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/> 
+          </feMerge>
+        </filter>
+      </defs>
+      <g filter="url(#markerShadow)">
+        <path d="M20 0C10.059 0 2 8.059 2 18c0 14 18 38 18 38s18-24 18-38c0-9.941-8.059-18-18-18z" 
+              fill="${color}" stroke="white" stroke-width="2.5"/>
+        <circle cx="20" cy="18" r="7.5" fill="white"/>
+        <circle cx="20" cy="18" r="4" fill="${color}"/>
+      </g>
     </svg>
   `
   return L.divIcon({
     html: svgIcon,
     className: 'custom-map-marker',
-    iconSize: [32, 42],
-    iconAnchor: [16, 42],
-    popupAnchor: [0, -42]
+    iconSize: [40, 56],
+    iconAnchor: [20, 56],
+    popupAnchor: [0, -56]
   })
 }
 
@@ -264,37 +280,33 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
         : '<div style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px; font-size: 11px; color: #94a3b8;">Sin dosificaciones registradas</div>'
 
       const popupContent = `
-        <div style="font-family: 'IBM Plex Sans', sans-serif; min-width: 220px; max-width: 280px;">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-            <div style="font-weight: 600; font-size: 15px; color: #1a1a1a; line-height: 1.2;">
+        <div style="font-family: 'IBM Plex Sans', sans-serif; min-width: 240px; max-width: 320px;">
+          <div style="margin-bottom: 10px;">
+            <div style="font-weight: 700; font-size: 16px; color: #1a1a1a; line-height: 1.3; margin-bottom: 4px;">
               ${client.name}
             </div>
-            ${statusBadge}
-          </div>
-          
-          <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; background: ${getCropColor(client.cropType)}; color: white; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
-              ${client.cropType}
-            </span>
-            ${client.photos && client.photos.length > 0 ? `
-              <span style="display: inline-flex; align-items: center; gap: 3px; background: #3b82f6; color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">
-                📷 ${client.photos.length}
-              </span>
-            ` : ''}
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              ${statusBadge}
+              ${client.photos && client.photos.length > 0 ? `
+                <span style="display: inline-flex; align-items: center; gap: 3px; background: #3b82f6; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                  📷 ${client.photos.length}
+                </span>
+              ` : ''}
+            </div>
           </div>
 
-          <div style="display: grid; gap: 6px; margin-top: 8px;">
+          <div style="background: ${getCropColor(client.cropType)}; color: white; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-weight: 600; font-size: 12px; text-align: center;">
+            🌱 ${client.cropType} • ${client.hectares} ha
+          </div>
+
+          <div style="display: grid; gap: 6px; margin-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-              <span style="color: #64748b; min-width: 65px;">📏 Hectáreas:</span>
-              <span style="font-weight: 600; color: #1e293b; font-family: 'JetBrains Mono', monospace;">${client.hectares} ha</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-              <span style="color: #64748b; min-width: 65px;">📞 Contacto:</span>
+              <span style="color: #64748b;">📞</span>
               <span style="font-weight: 500; color: #475569;">${client.contact}</span>
             </div>
             ${client.email ? `
               <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                <span style="color: #64748b; min-width: 65px;">✉️ Email:</span>
+                <span style="color: #64748b;">✉️</span>
                 <span style="font-weight: 500; color: #475569; font-size: 11px;">${client.email}</span>
               </div>
             ` : ''}
@@ -302,8 +314,8 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
 
           ${dosificationInfo}
 
-          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8;">
-            Registrado: ${new Date(client.createdAt).toLocaleDateString('es-EC', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #94a3b8;">
+            Desde: ${new Date(client.createdAt).toLocaleDateString('es-EC', { month: 'short', day: 'numeric', year: '2-digit' })}
           </div>
         </div>
       `

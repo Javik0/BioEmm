@@ -30,7 +30,7 @@ import {
   CaretUpDown,
   Check
 } from '@phosphor-icons/react'
-import { SimpleMap } from './SimpleMap'
+import { LocationPicker } from './LocationPicker'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
@@ -59,7 +59,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [city, setCity] = useState('')
   const [paymentTerms, setPaymentTerms] = useState('')
   const [preferredContactMethod, setPreferredContactMethod] = useState<'phone' | 'email' | 'whatsapp'>('phone')
-  const [showMap, setShowMap] = useState(false)
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
   const [photos, setPhotos] = useState<ClientPhoto[]>([])
   const [photoDescription, setPhotoDescription] = useState('')
@@ -142,7 +142,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     setCity('')
     setPaymentTerms('')
     setPreferredContactMethod('phone')
-    setShowMap(false)
+    setLocationPickerOpen(false)
     setActiveTab('basic')
     setPhotos([])
     setPhotoDescription('')
@@ -161,11 +161,10 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lat: parseFloat(position.coords.latitude.toFixed(8)),
+            lng: parseFloat(position.coords.longitude.toFixed(8))
           }
           setLocation(newLocation)
-          setShowMap(true)
           toast.success('Ubicación GPS obtenida correctamente')
         },
         (error) => {
@@ -237,7 +236,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-2">
             <User size={28} weight="duotone" />
@@ -250,37 +249,37 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="basic" className="flex items-center gap-2">
-                <User size={16} />
-                <span className="hidden sm:inline">Información Básica</span>
-                <span className="sm:hidden">Básico</span>
+            <TabsList className="grid w-full grid-cols-4 gap-0.5">
+              <TabsTrigger value="basic" className="flex items-center gap-1 text-xs md:text-sm px-2">
+                <User size={14} />
+                <span className="hidden md:inline">Básica</span>
+                <span className="md:hidden">Básico</span>
               </TabsTrigger>
-              <TabsTrigger value="location" className="flex items-center gap-2">
-                <MapPin size={16} />
-                <span className="hidden sm:inline">Ubicación</span>
-                <span className="sm:hidden">Ubicación</span>
+              <TabsTrigger value="location" className="flex items-center gap-1 text-xs md:text-sm px-2">
+                <MapPin size={14} />
+                <span className="hidden md:inline">Ubicación</span>
+                <span className="md:hidden">Ubicación</span>
               </TabsTrigger>
-              <TabsTrigger value="photos" className="flex items-center gap-2">
-                <Camera size={16} />
-                <span className="hidden sm:inline">Fotos</span>
-                <span className="sm:hidden">Fotos</span>
+              <TabsTrigger value="photos" className="flex items-center gap-1 text-xs md:text-sm px-2">
+                <Camera size={14} />
+                <span className="hidden md:inline">Fotos</span>
+                <span className="md:hidden">Fotos</span>
                 {photos.length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                     {photos.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="additional" className="flex items-center gap-2">
-                <Buildings size={16} />
-                <span className="hidden sm:inline">Datos Adicionales</span>
-                <span className="sm:hidden">Adicional</span>
+              <TabsTrigger value="additional" className="flex items-center gap-1 text-xs md:text-sm px-2">
+                <Buildings size={14} />
+                <span className="hidden md:inline">Adicional</span>
+                <span className="md:hidden">Más</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-5 mt-6">
+            <TabsContent value="basic" className="space-y-3 mt-4">
               <Card className="p-5 bg-primary/5 border-primary/20">
                 <h3 className="font-semibold text-sm text-primary mb-4 flex items-center gap-2">
                   <User size={18} weight="duotone" />
@@ -496,7 +495,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
               </Card>
             </TabsContent>
 
-            <TabsContent value="location" className="space-y-5 mt-6">
+            <TabsContent value="location" className="space-y-3 mt-4">
               <Card className="p-5 bg-primary/5 border-primary/20">
                 <h3 className="font-semibold text-sm text-primary mb-4 flex items-center gap-2">
                   <MapPin size={18} weight="duotone" />
@@ -554,12 +553,12 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                 <div className="flex flex-col sm:flex-row gap-2 mb-4">
                   <Button
                     type="button"
-                    variant={showMap ? "default" : "outline"}
-                    onClick={() => setShowMap(!showMap)}
-                    className="flex-1"
+                    variant="default"
+                    onClick={() => setLocationPickerOpen(true)}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
                   >
-                    <MapPin className="mr-2" weight={showMap ? "fill" : "regular"} />
-                    {showMap ? 'Ocultar Mapa' : 'Seleccionar en Mapa'}
+                    <MapPin className="mr-2" weight="fill" />
+                    Seleccionar Ubicación en Mapa
                   </Button>
                   <Button
                     type="button"
@@ -583,29 +582,16 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                   )}
                 </div>
 
-                {showMap && (
-                  <div className="rounded-lg overflow-hidden border-2 border-accent/30 shadow-lg">
-                    <SimpleMap
-                      clients={[]}
-                      selectedLocation={location}
-                      onMapClick={(lat, lng) => {
-                        setLocation({ lat, lng })
-                        toast.success('Ubicación GPS seleccionada correctamente')
-                      }}
-                    />
-                  </div>
-                )}
-
-                {!showMap && !location && (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
+                {!location && (
+                  <div className="text-center py-8 text-muted-foreground text-sm bg-white rounded-lg border-2 border-dashed border-accent/30">
                     <MapPin size={48} className="mx-auto mb-3 opacity-30" weight="duotone" />
-                    <p>Haz clic en "Seleccionar en Mapa" para agregar coordenadas GPS</p>
+                    <p>Haz clic en "Seleccionar Ubicación en Mapa" para agregar coordenadas GPS precisas</p>
                   </div>
                 )}
               </Card>
             </TabsContent>
 
-            <TabsContent value="photos" className="space-y-5 mt-6">
+            <TabsContent value="photos" className="space-y-3 mt-4">
               <Card className="p-5 bg-accent/5 border-accent/20">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-sm text-accent flex items-center gap-2">
@@ -745,7 +731,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
               )}
             </TabsContent>
 
-            <TabsContent value="additional" className="space-y-5 mt-6">
+            <TabsContent value="additional" className="space-y-3 mt-4">
               <Card className="p-5 bg-secondary/5 border-secondary/20">
                 <h3 className="font-semibold text-sm text-secondary mb-4 flex items-center gap-2">
                   <CurrencyDollar size={18} weight="duotone" />
@@ -783,7 +769,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
             </TabsContent>
           </Tabs>
 
-          <Separator className="my-6" />
+          <Separator className="my-3" />
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={handleClose} className="min-w-[100px]">
@@ -794,6 +780,16 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
             </Button>
           </DialogFooter>
         </form>
+
+        <LocationPicker
+          open={locationPickerOpen}
+          onOpenChange={setLocationPickerOpen}
+          onLocationSelect={(newLocation) => {
+            setLocation(newLocation)
+            toast.success('Ubicación seleccionada correctamente')
+          }}
+          initialLocation={location}
+        />
       </DialogContent>
     </Dialog>
   )
