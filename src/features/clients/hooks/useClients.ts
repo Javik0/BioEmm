@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Client } from '@/types'
-import { deleteClient as deleteClientDoc, subscribeClientsWithError, upsertClient } from '@/lib/firestoreClients'
+import { deleteClient as deleteClientDoc, subscribeClientsWithError, upsertClient } from '../services/firestoreClients'
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth'
 
-export function useFirestoreClients() {
+export function useClients() {
   const { user, loading: authLoading } = useFirebaseAuth()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
