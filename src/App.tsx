@@ -673,6 +673,7 @@ function App() {
         onOpenChange={setClientDetailOpen}
         onEdit={handleEditClient}
         onUpdatePhotos={handleUpdatePhotos}
+        dosifications={dosificationsList}
       />
 
       <DosificationForm
