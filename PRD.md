@@ -62,16 +62,23 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
   - Imposibilidad de aplicar dosificación si no hay stock suficiente
 
 ### Gestión de Inventario de Productos
-- **Functionality**: Sistema completo de inventario con catálogo de productos, control de stock actual, mínimos y máximos, categorización, costeo, y alertas automáticas
-- **Purpose**: Controlar disponibilidad de productos para dosificaciones, prevenir desabastecimientos, optimizar reposiciones, y calcular valor del inventario
-- **Trigger**: Tab "Inventario" en navegación principal, botón "Nuevo Producto"
-- **Progression**: Crear producto → Definir categoría y unidad → Establecer stocks inicial/mínimo/máximo → Sistema monitorea niveles → Alertas automáticas cuando stock < mínimo → Registrar entradas/salidas → Historial completo de movimientos
+- **Functionality**: Sistema completo de inventario con catálogo de productos, importación masiva del catálogo inicial BioEmm, control de stock actual, mínimos y máximos, categorización, costeo, y alertas automáticas
+- **Purpose**: Controlar disponibilidad de productos para dosificaciones, prevenir desabastecimientos, optimizar reposiciones, calcular valor del inventario, y facilitar la incorporación rápida del catálogo de productos de la empresa
+- **Trigger**: Tab "Inventario" en navegación principal, botón "Nuevo Producto", botón "Importar Catálogo"
+- **Progression**: Importar catálogo → Revisar 17 productos disponibles (Elicitech, Nanocrop, Kaliter) → Seleccionar productos deseados → Importar masivamente → O bien: Crear producto individual → Definir categoría y unidad → Establecer stocks inicial/mínimo/máximo → Sistema monitorea niveles → Alertas automáticas cuando stock < mínimo → Registrar entradas/salidas → Historial completo de movimientos
 - **Success criteria**: 
+  - Importador masivo con vista previa de todos los productos del catálogo
+  - Detección automática de productos ya importados (por SKU)
+  - Selección múltiple con opción de "Seleccionar todos"
+  - Información completa por producto: SKU, marca, tipo, composición, descripción, presentaciones
+  - Productos importados con datos pre-cargados (nombre, SKU, proveedor, notas técnicas)
+  - Contador visual de productos disponibles vs ya importados vs seleccionados
   - Productos categorizados correctamente
   - Alertas visibles en dashboard cuando stock bajo/crítico
   - Historial completo y auditable de movimientos
   - Cálculo automático de valor total del inventario
   - Stock actualizado en tiempo real tras entradas/salidas
+  - Catálogo inicial incluye: Elixir, Pentagram, Cuprocitor, Magma Mg/Zn, Nanocrop (Ca, Zn, Manzinc, Cu, Mo), IK Nodosum, IK Calix, Sulkat, IK Kalium, Flowerdrive, Novosal, Blenda, GB30
 
 ### Control de Movimientos de Stock
 - **Functionality**: Registro detallado de entradas, salidas y ajustes de inventario con razones, referencias y trazabilidad
@@ -127,6 +134,9 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 - **Productos sin costo**: Permitir productos sin costo unitario, calcular valor de inventario solo para productos con precio
 - **Movimientos sin referencia**: Permitir movimientos manuales sin referencia obligatoria para flexibilidad
 - **Dosificaciones aplicadas**: Una vez aplicadas, no se pueden editar ni revertir (solo marcar como completada), garantiza integridad del historial
+- **Productos duplicados en catálogo**: Importador detecta SKUs existentes y excluye automáticamente productos ya importados
+- **Importación completa**: Si todos los productos del catálogo ya están importados, mostrar mensaje informativo
+- **Catálogo vacío tras importación**: Productos importados desaparecen de lista "Disponibles" y aparecen en "Ya en Inventario"
 
 ## Design Direction
 BioEmm debe transmitir **confianza técnica y profesionalismo agroindustrial**. El diseño refleja la naturaleza del negocio (agricultura, crecimiento, precisión) con paleta terrenal/vegetal, pero manteniendo sofisticación empresarial. Espacios generosos, tipografía clara, iconografía funcional.
@@ -194,10 +204,11 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - MapTrifold: Vista de mapa estándar, botón de capa base
 - Globe: Vista satelital, botón de capa base
 - Plus/PlusCircle: Nuevo cliente, nueva dosificación, nuevo producto
+- Upload: Importar catálogo de productos masivamente
 - Flask: Dosificaciones, productos químicos
 - ChartLine/ChartBar/ChartPieSlice: Reportes, estadísticas, gráficos de consumo (área, barras, circular)
 - Users: Módulo de clientes
-- Package: Inventario de productos, stock
+- Package: Inventario de productos, stock, productos individuales en catálogo
 - CalendarCheck: Programación de visitas
 - Warning/WarningCircle: Alertas de stock bajo/crítico
 - ArrowUp: Entradas de stock
@@ -207,6 +218,7 @@ Animaciones sutiles y funcionales que refuerzan la sensación de profesionalismo
 - FunnelSimple: Filtros de reportes
 - FileArrowDown/Download: Exportar reportes
 - TrendUp/TrendDown: Tendencias en consumo, gráficos de valor
+- CheckCircle: Productos seleccionados en importador, productos ya importados
 
 **Spacing**:
 - Cards: p-6 (24px padding interior)

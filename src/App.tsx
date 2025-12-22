@@ -12,12 +12,13 @@ import { StockAdjustmentForm } from '@/components/StockAdjustmentForm'
 import { StockHistory } from '@/components/StockHistory'
 import { ConsumptionReports } from '@/components/ConsumptionReports'
 import { CropCalculator } from '@/components/CropCalculator'
+import { CatalogImporter } from '@/components/CatalogImporter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle, ChartBar, Calculator } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle, ChartBar, Calculator, Upload } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -30,6 +31,7 @@ function App() {
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const [dosificationFormOpen, setDosificationFormOpen] = useState(false)
   const [productFormOpen, setProductFormOpen] = useState(false)
+  const [catalogImporterOpen, setCatalogImporterOpen] = useState(false)
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false)
   const [clientDetailOpen, setClientDetailOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | undefined>()
@@ -235,6 +237,16 @@ function App() {
     }
     
     setProductFormOpen(false)
+  }
+
+  const handleImportCatalog = (importedProducts: Omit<Product, 'id' | 'createdAt'>[]) => {
+    const newProducts: Product[] = importedProducts.map(productData => ({
+      ...productData,
+      id: Date.now().toString() + Math.random(),
+      createdAt: new Date().toISOString()
+    }))
+    
+    setProducts((current) => [...(current || []), ...newProducts])
   }
 
   const handleDeleteProduct = (productId: string) => {
@@ -447,13 +459,23 @@ function App() {
             )}
 
             {activeTab === 'inventory' && (
-              <Button onClick={() => {
-                setEditingProduct(undefined)
-                setProductFormOpen(true)
-              }} className="bg-accent hover:bg-accent/90">
-                <Plus className="mr-2" weight="bold" />
-                Nuevo Producto
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => setCatalogImporterOpen(true)}
+                  className="border-primary text-primary hover:bg-primary/10"
+                >
+                  <Upload className="mr-2" weight="bold" />
+                  Importar Catálogo
+                </Button>
+                <Button onClick={() => {
+                  setEditingProduct(undefined)
+                  setProductFormOpen(true)
+                }} className="bg-accent hover:bg-accent/90">
+                  <Plus className="mr-2" weight="bold" />
+                  Nuevo Producto
+                </Button>
+              </div>
             )}
           </div>
 
@@ -709,6 +731,13 @@ function App() {
         product={selectedProduct}
         type={adjustmentType}
         onSubmit={handleStockMovement}
+      />
+
+      <CatalogImporter
+        open={catalogImporterOpen}
+        onOpenChange={setCatalogImporterOpen}
+        onImport={handleImportCatalog}
+        existingProducts={productsList}
       />
     </div>
   )
