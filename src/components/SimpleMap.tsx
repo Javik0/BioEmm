@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Client } from '@/types'
+import { Client, Dosification } from '@/types'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Globe, MapTrifold } from '@phosphor-icons/react'
+import { Globe, MapTrifold, Stack, CaretDown } from '@phosphor-icons/react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface SimpleMapProps {
   clients: Client[]
+  dosifications?: Dosification[]
   onClientClick?: (client: Client) => void
   onMapClick?: (lat: number, lng: number) => void
   selectedLocation?: { lat: number; lng: number }
@@ -61,14 +68,14 @@ const createSelectedIcon = () => {
   })
 }
 
-export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation }: SimpleMapProps) {
+export function SimpleMap({ clients, dosifications = [], onClientClick, onMapClick, selectedLocation }: SimpleMapProps) {
   const mapRef = useRef<L.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
   const selectedMarkerRef = useRef<L.Marker | null>(null)
-  const baseLayersRef = useRef<{ osm: L.TileLayer; satellite: L.TileLayer } | null>(null)
+  const baseLayersRef = useRef<{ osm: L.TileLayer; satellite: L.TileLayer; hybrid: L.TileLayer } | null>(null)
   
-  const [mapType, setMapType] = useState<'osm' | 'satellite'>('osm')
+  const [mapType, setMapType] = useState<'osm' | 'satellite' | 'hybrid'>('osm')
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -94,11 +101,18 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
       minZoom: 5
     })
 
+    const hybridLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      attribution: '&copy; Google',
+      maxZoom: 20,
+      minZoom: 5
+    })
+
     osmLayer.addTo(map)
 
     baseLayersRef.current = {
       osm: osmLayer,
-      satellite: satelliteLayer
+      satellite: satelliteLayer,
+      hybrid: hybridLayer
     }
 
     if (onMapClick) {
@@ -118,12 +132,16 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
   useEffect(() => {
     if (!mapRef.current || !baseLayersRef.current) return
 
+    mapRef.current.removeLayer(baseLayersRef.current.osm)
+    mapRef.current.removeLayer(baseLayersRef.current.satellite)
+    mapRef.current.removeLayer(baseLayersRef.current.hybrid)
+
     if (mapType === 'osm') {
-      mapRef.current.removeLayer(baseLayersRef.current.satellite)
       mapRef.current.addLayer(baseLayersRef.current.osm)
-    } else {
-      mapRef.current.removeLayer(baseLayersRef.current.osm)
+    } else if (mapType === 'satellite') {
       mapRef.current.addLayer(baseLayersRef.current.satellite)
+    } else {
+      mapRef.current.addLayer(baseLayersRef.current.hybrid)
     }
   }, [mapType])
 
@@ -136,29 +154,79 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
     clients.forEach(client => {
       if (!client.location) return
 
+      const clientDosifications = dosifications.filter(d => d.clientId === client.id)
+      const pendingDosifications = clientDosifications.filter(d => d.status === 'Pendiente').length
+      const appliedDosifications = clientDosifications.filter(d => d.status === 'Aplicada' || d.status === 'Completada').length
+      const lastDosification = clientDosifications.length > 0 
+        ? new Date(Math.max(...clientDosifications.map(d => new Date(d.date).getTime())))
+        : null
+
       const marker = L.marker(
         [client.location.lat, client.location.lng],
         { icon: createCustomIcon(getCropColor(client.cropType)) }
       )
 
+      const statusBadge = client.status === 'Activo' 
+        ? '<span style="background: #16a34a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">ACTIVO</span>'
+        : '<span style="background: #6b7280; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">INACTIVO</span>'
+
+      const dosificationInfo = clientDosifications.length > 0 
+        ? `
+          <div style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px;">
+            <div style="font-size: 11px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">📋 Dosificaciones:</div>
+            <div style="display: flex; gap: 8px; font-size: 11px;">
+              ${appliedDosifications > 0 ? `<span style="color: #16a34a;">✓ ${appliedDosifications} aplicadas</span>` : ''}
+              ${pendingDosifications > 0 ? `<span style="color: #f97316; font-weight: 600;">⏳ ${pendingDosifications} pendientes</span>` : ''}
+            </div>
+            ${lastDosification ? `<div style="font-size: 10px; color: #64748b; margin-top: 4px;">Última: ${lastDosification.toLocaleDateString('es-EC', { month: 'short', day: 'numeric' })}</div>` : ''}
+          </div>
+        `
+        : '<div style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px; font-size: 11px; color: #94a3b8;">Sin dosificaciones registradas</div>'
+
       const popupContent = `
-        <div style="font-family: 'IBM Plex Sans', sans-serif; min-width: 180px;">
-          <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: #1a1a1a;">
-            ${client.name}
+        <div style="font-family: 'IBM Plex Sans', sans-serif; min-width: 220px; max-width: 280px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+            <div style="font-weight: 600; font-size: 15px; color: #1a1a1a; line-height: 1.2;">
+              ${client.name}
+            </div>
+            ${statusBadge}
           </div>
-          <div style="display: inline-block; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 6px; color: #475569;">
-            ${client.cropType}
+          
+          <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; background: ${getCropColor(client.cropType)}; color: white; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+              ${client.cropType}
+            </span>
           </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-            📍 ${client.hectares} hectáreas
+
+          <div style="display: grid; gap: 6px; margin-top: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+              <span style="color: #64748b; min-width: 65px;">📏 Hectáreas:</span>
+              <span style="font-weight: 600; color: #1e293b; font-family: 'JetBrains Mono', monospace;">${client.hectares} ha</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+              <span style="color: #64748b; min-width: 65px;">📞 Contacto:</span>
+              <span style="font-weight: 500; color: #475569;">${client.contact}</span>
+            </div>
+            ${client.email ? `
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                <span style="color: #64748b; min-width: 65px;">✉️ Email:</span>
+                <span style="font-weight: 500; color: #475569; font-size: 11px;">${client.email}</span>
+              </div>
+            ` : ''}
           </div>
-          <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
-            ${client.contact}
+
+          ${dosificationInfo}
+
+          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8;">
+            Registrado: ${new Date(client.createdAt).toLocaleDateString('es-EC', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
         </div>
       `
 
-      marker.bindPopup(popupContent)
+      marker.bindPopup(popupContent, {
+        maxWidth: 300,
+        className: 'custom-popup'
+      })
 
       if (onClientClick) {
         marker.on('click', () => {
@@ -169,7 +237,7 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
       marker.addTo(mapRef.current!)
       markersRef.current.set(client.id, marker)
     })
-  }, [clients, onClientClick])
+  }, [clients, dosifications, onClientClick])
 
   useEffect(() => {
     if (!mapRef.current) return
@@ -210,25 +278,36 @@ export function SimpleMap({ clients, onClientClick, onMapClick, selectedLocation
     <Card className="relative w-full h-[600px] overflow-hidden">
       <div ref={mapContainerRef} className="w-full h-full" />
       
-      <div className="absolute top-4 right-4 z-[1000] flex gap-2">
-        <Button
-          size="sm"
-          variant={mapType === 'osm' ? 'default' : 'outline'}
-          onClick={() => setMapType('osm')}
-          className={mapType === 'osm' ? 'bg-primary shadow-lg' : 'bg-white/95 backdrop-blur shadow-md'}
-        >
-          <MapTrifold className="mr-2" size={18} weight={mapType === 'osm' ? 'fill' : 'regular'} />
-          Mapa
-        </Button>
-        <Button
-          size="sm"
-          variant={mapType === 'satellite' ? 'default' : 'outline'}
-          onClick={() => setMapType('satellite')}
-          className={mapType === 'satellite' ? 'bg-primary shadow-lg' : 'bg-white/95 backdrop-blur shadow-md'}
-        >
-          <Globe className="mr-2" size={18} weight={mapType === 'satellite' ? 'fill' : 'regular'} />
-          Satélite
-        </Button>
+      <div className="absolute top-4 right-4 z-[1000]">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              className="bg-white/95 backdrop-blur shadow-lg border border-gray-200 hover:bg-white"
+            >
+              <Stack className="mr-2" size={18} weight="bold" />
+              {mapType === 'osm' ? 'Mapa Base' : mapType === 'satellite' ? 'Satélite' : 'Híbrido'}
+              <CaretDown className="ml-2" size={14} weight="bold" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => setMapType('osm')}>
+              <MapTrifold className="mr-2" size={18} weight={mapType === 'osm' ? 'fill' : 'regular'} />
+              Mapa Base
+              {mapType === 'osm' && <span className="ml-auto text-primary">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setMapType('satellite')}>
+              <Globe className="mr-2" size={18} weight={mapType === 'satellite' ? 'fill' : 'regular'} />
+              Satélite
+              {mapType === 'satellite' && <span className="ml-auto text-primary">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setMapType('hybrid')}>
+              <Stack className="mr-2" size={18} weight={mapType === 'hybrid' ? 'fill' : 'regular'} />
+              Híbrido
+              {mapType === 'hybrid' && <span className="ml-auto text-primary">✓</span>}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur p-3 rounded-lg shadow-lg text-xs space-y-2 z-[1000] border border-gray-200">

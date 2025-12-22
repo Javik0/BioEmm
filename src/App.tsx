@@ -412,6 +412,7 @@ function App() {
           <TabsContent value="map" className="space-y-4">
             <SimpleMap
               clients={clientsList}
+              dosifications={dosificationsList}
               onClientClick={(client) => {
                 setSelectedClient(client)
                 toast.info(`Cliente: ${client.name}`)
