@@ -357,3 +357,26 @@ export const AGRICULTURE_TYPES: AgricultureType[] = ['Ecológica', 'Tradicional'
 export type ApplicationMode = 'Foliar' | 'Radicular'
 
 export const APPLICATION_MODES: ApplicationMode[] = ['Foliar', 'Radicular']
+
+// Visitas programadas
+export type VisitStatus = 'Programada' | 'Completada' | 'Cancelada' | 'Reprogramada'
+
+export const VISIT_STATUSES: VisitStatus[] = ['Programada', 'Completada', 'Cancelada', 'Reprogramada']
+
+export type VisitType = 'Prospección' | 'Seguimiento' | 'Aplicación' | 'Cobranza' | 'Entrega' | 'Otro'
+
+export const VISIT_TYPES: VisitType[] = ['Prospección', 'Seguimiento', 'Aplicación', 'Cobranza', 'Entrega', 'Otro']
+
+export interface Visit {
+  id: string
+  clientId: string
+  clientName: string
+  scheduledDate: string // ISO date
+  scheduledTime?: string // HH:mm
+  type: VisitType
+  status: VisitStatus
+  notes?: string
+  completedAt?: string
+  completionNotes?: string
+  createdAt: string
+}

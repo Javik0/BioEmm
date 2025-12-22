@@ -1,4 +1,4 @@
-import { Client, ClientPhoto, Dosification } from '@/types'
+import { Client, ClientPhoto, Dosification, Visit } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,7 +23,11 @@ import {
   Flask,
   Calendar,
   ClockCounterClockwise,
-  Info
+  Info,
+  Plus,
+  CalendarPlus,
+  WhatsappLogo,
+  PhoneCall
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 
@@ -34,17 +38,22 @@ interface ClientDetailProps {
   onEdit?: (client: Client) => void
   onUpdatePhotos?: (clientId: string, photos: ClientPhoto[]) => void
   dosifications?: Dosification[]
+  visits?: Visit[]
+  onCreateDosification?: (client: Client) => void
+  onScheduleVisit?: (client: Client) => void
 }
 
-export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhotos, dosifications = [] }: ClientDetailProps) {
+export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhotos, dosifications = [], visits = [], onCreateDosification, onScheduleVisit }: ClientDetailProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
   const [photoManagerOpen, setPhotoManagerOpen] = useState(false)
 
   if (!client) return null
 
   const clientDosifications = dosifications.filter(d => d.clientId === client.id)
+  const clientVisits = visits.filter(v => v.clientId === client.id)
   const appliedDosifications = clientDosifications.filter(d => d.status === 'Aplicada' || d.status === 'Completada')
   const pendingDosifications = clientDosifications.filter(d => d.status === 'Pendiente')
+  const upcomingVisits = clientVisits.filter(v => v.status === 'Programada')
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -100,19 +109,112 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
             </div>
           </DialogHeader>
 
+          {/* Acciones Rápidas */}
+          <Card className="p-4 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground mr-2">Acciones:</span>
+              {onCreateDosification && (
+                <Button 
+                  size="sm" 
+                  onClick={() => {
+                    onCreateDosification(client)
+                    onOpenChange(false)
+                  }}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Flask size={16} className="mr-1" weight="fill" />
+                  Nueva Dosificación
+                </Button>
+              )}
+              {onScheduleVisit && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => {
+                    onScheduleVisit(client)
+                    onOpenChange(false)
+                  }}
+                >
+                  <CalendarPlus size={16} className="mr-1" weight="fill" />
+                  Programar Visita
+                </Button>
+              )}
+              {client.phone && (
+                <>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => window.open(`https://wa.me/${client.phone.replace(/\D/g, '')}`, '_blank')}
+                    className="text-green-600 border-green-300 hover:bg-green-50"
+                  >
+                    <WhatsappLogo size={16} className="mr-1" weight="fill" />
+                    WhatsApp
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => window.open(`tel:${client.phone}`, '_blank')}
+                  >
+                    <PhoneCall size={16} className="mr-1" weight="fill" />
+                    Llamar
+                  </Button>
+                </>
+              )}
+            </div>
+            {(pendingDosifications.length > 0 || upcomingVisits.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-primary/10">
+                {pendingDosifications.length > 0 && (
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                    <Flask size={12} className="mr-1" />
+                    {pendingDosifications.length} dosificación{pendingDosifications.length !== 1 ? 'es' : ''} pendiente{pendingDosifications.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+                {upcomingVisits.length > 0 && (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                    <Calendar size={12} className="mr-1" />
+                    {upcomingVisits.length} visita{upcomingVisits.length !== 1 ? 's' : ''} programada{upcomingVisits.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </Card>
+
           <Tabs defaultValue="info" className="mt-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="info" className="flex items-center gap-2">
-                <Info size={16} />
-                Información
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="info" className="flex items-center gap-1 text-xs md:text-sm">
+                <Info size={14} />
+                <span className="hidden md:inline">Información</span>
+                <span className="md:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="photos" className="flex items-center gap-2">
-                <ImageIcon size={16} />
-                Fotos {client.photos && client.photos.length > 0 && `(${client.photos.length})`}
+              <TabsTrigger value="dosifications" className="flex items-center gap-1 text-xs md:text-sm">
+                <Flask size={14} />
+                <span className="hidden md:inline">Dosificaciones</span>
+                <span className="md:hidden">Dosis</span>
+                {clientDosifications.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {clientDosifications.length}
+                  </Badge>
+                )}
               </TabsTrigger>
-              <TabsTrigger value="dosifications" className="flex items-center gap-2">
-                <ClockCounterClockwise size={16} />
-                Historial {clientDosifications.length > 0 && `(${clientDosifications.length})`}
+              <TabsTrigger value="visits" className="flex items-center gap-1 text-xs md:text-sm">
+                <Calendar size={14} />
+                <span className="hidden md:inline">Visitas</span>
+                <span className="md:hidden">Visitas</span>
+                {clientVisits.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {clientVisits.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="flex items-center gap-1 text-xs md:text-sm">
+                <ImageIcon size={14} />
+                <span className="hidden md:inline">Fotos</span>
+                <span className="md:hidden">Fotos</span>
+                {client.photos && client.photos.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {client.photos.length}
+                  </Badge>
+                )}
               </TabsTrigger>
             </TabsList>
 
@@ -460,6 +562,122 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
                                     <p className="text-xs text-muted-foreground">{dosification.notes}</p>
                                   </div>
                                 )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="visits" className="space-y-6 mt-6">
+              {clientVisits.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Calendar size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <p className="text-lg text-muted-foreground mb-2">No hay visitas programadas</p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Programa visitas para dar seguimiento a este cliente
+                    </p>
+                    {onScheduleVisit && (
+                      <Button 
+                        onClick={() => {
+                          onScheduleVisit(client)
+                          onOpenChange(false)
+                        }}
+                      >
+                        <CalendarPlus size={16} className="mr-2" />
+                        Programar Primera Visita
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingVisits.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-blue-700 mb-3 flex items-center gap-2">
+                        <Calendar size={18} weight="duotone" />
+                        Próximas Visitas ({upcomingVisits.length})
+                      </h3>
+                      <div className="space-y-3">
+                        {upcomingVisits
+                          .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+                          .map((visit) => (
+                            <Card key={visit.id} className="border-l-4 border-l-blue-500 bg-blue-50/50">
+                              <CardContent className="py-4">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Calendar size={16} className="text-blue-600" />
+                                      <span className="font-medium">
+                                        {new Date(visit.scheduledDate).toLocaleDateString('es-EC', {
+                                          weekday: 'long',
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric'
+                                        })}
+                                      </span>
+                                      {visit.scheduledTime && (
+                                        <span className="text-muted-foreground">a las {visit.scheduledTime}</span>
+                                      )}
+                                    </div>
+                                    <Badge variant="outline" className="mt-1">
+                                      {visit.type}
+                                    </Badge>
+                                    {visit.notes && (
+                                      <p className="text-sm text-muted-foreground mt-2">{visit.notes}</p>
+                                    )}
+                                  </div>
+                                  <Badge className="bg-blue-600">
+                                    {visit.status}
+                                  </Badge>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {clientVisits.filter(v => v.status === 'Completada').length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-green-700 mb-3 flex items-center gap-2">
+                        <ClockCounterClockwise size={18} weight="duotone" />
+                        Visitas Realizadas ({clientVisits.filter(v => v.status === 'Completada').length})
+                      </h3>
+                      <div className="space-y-3">
+                        {clientVisits
+                          .filter(v => v.status === 'Completada')
+                          .sort((a, b) => new Date(b.completedAt || b.scheduledDate).getTime() - new Date(a.completedAt || a.scheduledDate).getTime())
+                          .map((visit) => (
+                            <Card key={visit.id} className="border-l-4 border-l-green-500">
+                              <CardContent className="py-4">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Calendar size={16} className="text-muted-foreground" />
+                                      <span className="font-medium">
+                                        {new Date(visit.completedAt || visit.scheduledDate).toLocaleDateString('es-EC', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <Badge variant="outline" className="mt-1">
+                                      {visit.type}
+                                    </Badge>
+                                    {visit.completionNotes && (
+                                      <p className="text-sm text-muted-foreground mt-2">{visit.completionNotes}</p>
+                                    )}
+                                  </div>
+                                  <Badge className="bg-green-600">
+                                    Completada
+                                  </Badge>
+                                </div>
                               </CardContent>
                             </Card>
                           ))}

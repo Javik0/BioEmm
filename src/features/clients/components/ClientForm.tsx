@@ -444,7 +444,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                           <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[280px] p-0" align="start" style={{ zIndex: 9999 }}>
+                      <PopoverContent className="w-[280px] p-0" align="start">
                         <Command>
                           <CommandInput placeholder="Buscar cultivo..." className="h-9" />
                           <CommandList className="max-h-[200px]">

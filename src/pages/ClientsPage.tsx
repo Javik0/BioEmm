@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import type { Client, ClientPhoto, Dosification, Product } from '@/types'
+import type { Client, ClientPhoto, Dosification, Product, Visit } from '@/types'
 import { useClients, ClientForm, ClientList, ClientDetail } from '@/features/clients'
 import { uploadClientPhoto, isBase64Url } from '@/features/clients/services/storageService'
 import { DosificationForm } from '@/features/dosifications'
@@ -14,6 +14,7 @@ export default function ClientsPage() {
   const { clients: clientsList, upsertClient, deleteClient } = useClients()
   const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
   const [products] = useKV<Product[]>('bioemm-products', [])
+  const [visits] = useKV<Visit[]>('bioemm-visits', [])
 
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const [clientDetailOpen, setClientDetailOpen] = useState(false)
@@ -27,6 +28,7 @@ export default function ClientsPage() {
 
   const dosificationsList = dosifications || []
   const productsList = products || []
+  const visitsList = visits || []
 
   const normalizeLocation = (location?: Client['location']) => {
     if (!location) return undefined
@@ -215,6 +217,12 @@ export default function ClientsPage() {
         onEdit={handleEditClient}
         onUpdatePhotos={handleUpdatePhotos}
         dosifications={dosificationsList}
+        visits={visitsList}
+        onCreateDosification={openDosificationForm}
+        onScheduleVisit={(client) => {
+          toast.info(`Función de programar visita para ${client.name} - Próximamente`)
+          // TODO: Implementar formulario de visitas
+        }}
       />
 
       {dosificationClient && (
