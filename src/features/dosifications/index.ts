@@ -1,3 +1,3 @@
 // Components
-export { default as DosificationForm } from './components/DosificationForm'
-export { default as CropCalculator } from './components/CropCalculator'
+export { DosificationForm } from './components/DosificationForm'
+export { CropCalculator } from './components/CropCalculator'

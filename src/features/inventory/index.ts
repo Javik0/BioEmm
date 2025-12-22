@@ -1,3 +1,3 @@
 // Components
-export { default as StockAdjustmentForm } from './components/StockAdjustmentForm'
-export { default as StockHistory } from './components/StockHistory'
+export { StockAdjustmentForm } from './components/StockAdjustmentForm'
+export { StockHistory } from './components/StockHistory'

@@ -30,7 +30,7 @@ import {
   CaretUpDown,
   Check
 } from '@phosphor-icons/react'
-import { LocationPicker } from './LocationPicker'
+import { LocationPicker } from '@/components/LocationPicker'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'

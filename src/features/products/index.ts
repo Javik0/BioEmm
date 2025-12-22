@@ -1,4 +1,4 @@
 // Components
-export { default as ProductForm } from './components/ProductForm'
-export { default as ProductList } from './components/ProductList'
-export { default as CatalogImporter } from './components/CatalogImporter'
+export { ProductForm } from './components/ProductForm'
+export { ProductList } from './components/ProductList'
+export { CatalogImporter } from './components/CatalogImporter'

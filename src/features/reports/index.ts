@@ -1,2 +1,2 @@
 // Components
-export { default as ConsumptionReports } from './components/ConsumptionReports'
+export { ConsumptionReports } from './components/ConsumptionReports'
