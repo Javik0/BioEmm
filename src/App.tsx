@@ -11,12 +11,13 @@ import { ProductList } from '@/components/ProductList'
 import { StockAdjustmentForm } from '@/components/StockAdjustmentForm'
 import { StockHistory } from '@/components/StockHistory'
 import { ConsumptionReports } from '@/components/ConsumptionReports'
+import { CropCalculator } from '@/components/CropCalculator'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle, ChartBar } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, MagnifyingGlass, Package, WarningCircle, ChartBar, Calculator } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -37,7 +38,7 @@ function App() {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>()
   const [adjustmentType, setAdjustmentType] = useState<'entry' | 'exit' | 'adjustment'>('entry')
   const [searchTerm, setSearchTerm] = useState('')
-  const [activeTab, setActiveTab] = useState('map')
+  const [activeTab, setActiveTab] = useState('calculator')
 
   const clientsList = clients || []
   const dosificationsList = dosifications || []
@@ -400,6 +401,10 @@ function App() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <TabsList>
+              <TabsTrigger value="calculator" className="flex items-center gap-2">
+                <Calculator size={18} />
+                Calculadora
+              </TabsTrigger>
               <TabsTrigger value="map" className="flex items-center gap-2">
                 <MapTrifold size={18} />
                 Mapa
@@ -451,6 +456,10 @@ function App() {
               </Button>
             )}
           </div>
+
+          <TabsContent value="calculator" className="space-y-4">
+            <CropCalculator />
+          </TabsContent>
 
           <TabsContent value="map" className="space-y-4">
             <SimpleMap

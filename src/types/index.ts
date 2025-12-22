@@ -281,3 +281,79 @@ export interface Dosification {
   notes?: string
   status: 'Pendiente' | 'Aplicada' | 'Completada'
 }
+
+export type CropCategory = 
+  | 'Brasicas'
+  | 'Cítricos'
+  | 'Cucurbitaceas'
+  | 'Flores ornamentales'
+  | 'Forrajeras'
+  | 'Fruta de cáscara'
+  | 'Fruta de hueso'
+  | 'Fruta de pepita'
+  | 'Frutos rojos'
+  | 'Grano'
+  | 'Hortícola'
+  | 'Leguminosas'
+  | 'Oleaginosas'
+  | 'Textil'
+  | 'Tropical'
+  | 'Tubérculos y raíces'
+  | 'Viña'
+
+export const CROP_CATEGORIES: CropCategory[] = [
+  'Brasicas',
+  'Cítricos',
+  'Cucurbitaceas',
+  'Flores ornamentales',
+  'Forrajeras',
+  'Fruta de cáscara',
+  'Fruta de hueso',
+  'Fruta de pepita',
+  'Frutos rojos',
+  'Grano',
+  'Hortícola',
+  'Leguminosas',
+  'Oleaginosas',
+  'Textil',
+  'Tropical',
+  'Tubérculos y raíces',
+  'Viña'
+]
+
+export type AgricultureObjective = 
+  | 'Activación inmunidad innata y autodefensa'
+  | 'Bioprotección'
+  | 'Calibre color y azúcares'
+  | 'Correctores'
+  | 'Correctores de ph y calidad del agua'
+  | 'Dureza conservación y calidad post cosecha'
+  | 'Enraizante'
+  | 'Estrés abiótico'
+  | 'Floración y cuajado'
+  | 'Incremento de peso específico de proteína'
+  | 'Materias orgánicas y mejorantes de suelo'
+  | 'Vigor y desarrollo vegetativo'
+
+export const AGRICULTURE_OBJECTIVES: AgricultureObjective[] = [
+  'Activación inmunidad innata y autodefensa',
+  'Bioprotección',
+  'Calibre color y azúcares',
+  'Correctores',
+  'Correctores de ph y calidad del agua',
+  'Dureza conservación y calidad post cosecha',
+  'Enraizante',
+  'Estrés abiótico',
+  'Floración y cuajado',
+  'Incremento de peso específico de proteína',
+  'Materias orgánicas y mejorantes de suelo',
+  'Vigor y desarrollo vegetativo'
+]
+
+export type AgricultureType = 'Ecológica' | 'Tradicional'
+
+export const AGRICULTURE_TYPES: AgricultureType[] = ['Ecológica', 'Tradicional']
+
+export type ApplicationMode = 'Foliar' | 'Radicular'
+
+export const APPLICATION_MODES: ApplicationMode[] = ['Foliar', 'Radicular']
