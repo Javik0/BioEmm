@@ -260,10 +260,15 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
             ${statusBadge}
           </div>
           
-          <div style="margin-bottom: 8px;">
+          <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
             <span style="display: inline-block; background: ${getCropColor(client.cropType)}; color: white; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
               ${client.cropType}
             </span>
+            ${client.photos && client.photos.length > 0 ? `
+              <span style="display: inline-flex; align-items: center; gap: 3px; background: #3b82f6; color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">
+                📷 ${client.photos.length}
+              </span>
+            ` : ''}
           </div>
 
           <div style="display: grid; gap: 6px; margin-top: 8px;">

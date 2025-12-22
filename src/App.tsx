@@ -3,6 +3,7 @@ import { useKV } from '@github/spark/hooks'
 import { Client, Dosification, Product, StockMovement } from '@/types'
 import { ClientForm } from '@/components/ClientForm'
 import { ClientList } from '@/components/ClientList'
+import { ClientDetail } from '@/components/ClientDetail'
 import { DosificationForm } from '@/components/DosificationForm'
 import { SimpleMap } from '@/components/SimpleMap'
 import { ProductForm } from '@/components/ProductForm'
@@ -29,7 +30,9 @@ function App() {
   const [dosificationFormOpen, setDosificationFormOpen] = useState(false)
   const [productFormOpen, setProductFormOpen] = useState(false)
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false)
+  const [clientDetailOpen, setClientDetailOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | undefined>()
+  const [editingClient, setEditingClient] = useState<Client | undefined>()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [editingProduct, setEditingProduct] = useState<Product | undefined>()
   const [adjustmentType, setAdjustmentType] = useState<'entry' | 'exit' | 'adjustment'>('entry')
@@ -42,15 +45,27 @@ function App() {
   const stockMovementsList = stockMovements || []
 
   const handleCreateClient = (clientData: Omit<Client, 'id' | 'createdAt'>) => {
-    const newClient: Client = {
-      ...clientData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+    if (editingClient) {
+      setClients((current) =>
+        (current || []).map((c) =>
+          c.id === editingClient.id
+            ? { ...clientData, id: editingClient.id, createdAt: editingClient.createdAt }
+            : c
+        )
+      )
+      toast.success(`Cliente ${clientData.name} actualizado correctamente`)
+      setEditingClient(undefined)
+    } else {
+      const newClient: Client = {
+        ...clientData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString()
+      }
+      
+      setClients((current) => [...(current || []), newClient])
+      toast.success(`Cliente ${newClient.name} agregado correctamente`)
     }
-    
-    setClients((current) => [...(current || []), newClient])
     setClientFormOpen(false)
-    toast.success(`Cliente ${newClient.name} agregado correctamente`)
   }
 
   const handleDeleteClient = (clientId: string) => {
@@ -171,6 +186,16 @@ function App() {
     setDosificationFormOpen(true)
   }
 
+  const openClientDetail = (client: Client) => {
+    setSelectedClient(client)
+    setClientDetailOpen(true)
+  }
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client)
+    setClientFormOpen(true)
+  }
+
   const handleCreateProduct = (productData: Omit<Product, 'id' | 'createdAt'>) => {
     if (editingProduct) {
       setProducts((current) =>
@@ -271,7 +296,10 @@ function App() {
               <h1 className="text-3xl font-semibold text-primary">BioEmm</h1>
               <p className="text-sm text-muted-foreground">Sistema de Gestión de Clientes Agrícolas</p>
             </div>
-            <Button size="lg" onClick={() => setClientFormOpen(true)} className="bg-accent hover:bg-accent/90">
+            <Button size="lg" onClick={() => {
+              setEditingClient(undefined)
+              setClientFormOpen(true)
+            }} className="bg-accent hover:bg-accent/90">
               <Plus className="mr-2" weight="bold" />
               Nuevo Cliente
             </Button>
@@ -414,8 +442,7 @@ function App() {
               clients={clientsList}
               dosifications={dosificationsList}
               onClientClick={(client) => {
-                setSelectedClient(client)
-                toast.info(`Cliente: ${client.name}`)
+                openClientDetail(client)
               }}
             />
             {clientsList.filter(c => !c.location).length > 0 && (
@@ -433,7 +460,7 @@ function App() {
           <TabsContent value="list" className="space-y-4">
             <ClientList
               clients={filteredClients}
-              onClientClick={(client) => setSelectedClient(client)}
+              onClientClick={openClientDetail}
               onDeleteClient={handleDeleteClient}
               onCreateDosification={openDosificationForm}
             />
@@ -617,8 +644,19 @@ function App() {
 
       <ClientForm
         open={clientFormOpen}
-        onOpenChange={setClientFormOpen}
+        onOpenChange={(open) => {
+          setClientFormOpen(open)
+          if (!open) setEditingClient(undefined)
+        }}
         onSubmit={handleCreateClient}
+        editClient={editingClient}
+      />
+
+      <ClientDetail
+        client={selectedClient || null}
+        open={clientDetailOpen}
+        onOpenChange={setClientDetailOpen}
+        onEdit={handleEditClient}
       />
 
       <DosificationForm

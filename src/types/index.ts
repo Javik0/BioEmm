@@ -8,6 +8,14 @@ export type CropType =
 
 export type ClientStatus = 'Prospecto' | 'Activo' | 'Inactivo'
 
+export interface ClientPhoto {
+  id: string
+  url: string
+  fileName: string
+  description?: string
+  uploadedAt: string
+}
+
 export interface Client {
   id: string
   name: string
@@ -30,6 +38,7 @@ export interface Client {
   city?: string
   paymentTerms?: string
   preferredContactMethod?: 'phone' | 'email' | 'whatsapp'
+  photos?: ClientPhoto[]
 }
 
 export type ProductCategory = 

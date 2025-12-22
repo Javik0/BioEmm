@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Client, CropType, ClientStatus } from '@/types'
+import { Client, CropType, ClientStatus, ClientPhoto } from '@/types'
 import { 
   MapPin, 
   X, 
@@ -20,7 +20,11 @@ import {
   CurrencyDollar,
   ChatText,
   IdentificationCard,
-  Crosshair
+  Crosshair,
+  Camera,
+  Trash,
+  Image as ImageIcon,
+  UploadSimple
 } from '@phosphor-icons/react'
 import { SimpleMap } from './SimpleMap'
 import { toast } from 'sonner'
@@ -52,6 +56,9 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [preferredContactMethod, setPreferredContactMethod] = useState<'phone' | 'email' | 'whatsapp'>('phone')
   const [showMap, setShowMap] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
+  const [photos, setPhotos] = useState<ClientPhoto[]>([])
+  const [photoDescription, setPhotoDescription] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (editClient) {
@@ -70,6 +77,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
       setCity(editClient.city || '')
       setPaymentTerms(editClient.paymentTerms || '')
       setPreferredContactMethod(editClient.preferredContactMethod || 'phone')
+      setPhotos(editClient.photos || [])
     }
   }, [editClient])
 
@@ -104,7 +112,8 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
       region: region || undefined,
       city: city || undefined,
       paymentTerms: paymentTerms || undefined,
-      preferredContactMethod
+      preferredContactMethod,
+      photos: photos.length > 0 ? photos : undefined
     })
 
     resetForm()
@@ -128,6 +137,8 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     setPreferredContactMethod('phone')
     setShowMap(false)
     setActiveTab('basic')
+    setPhotos([])
+    setPhotoDescription('')
   }
 
   const handleClose = () => {
@@ -159,6 +170,50 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     }
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} no es una imagen válida`)
+        return
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} es muy grande. Máximo 5MB por imagen`)
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const newPhoto: ClientPhoto = {
+          id: Date.now().toString() + Math.random(),
+          url: reader.result as string,
+          fileName: file.name,
+          description: photoDescription || undefined,
+          uploadedAt: new Date().toISOString()
+        }
+        setPhotos((current) => [...current, newPhoto])
+        setPhotoDescription('')
+        toast.success(`Foto "${file.name}" agregada`)
+      }
+      reader.readAsDataURL(file)
+    })
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDeletePhoto = (photoId: string) => {
+    const photo = photos.find(p => p.id === photoId)
+    if (photo && confirm(`¿Eliminar foto "${photo.fileName}"?`)) {
+      setPhotos((current) => current.filter(p => p.id !== photoId))
+      toast.success('Foto eliminada')
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
@@ -176,7 +231,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <User size={16} />
                 <span className="hidden sm:inline">Información Básica</span>
@@ -186,6 +241,16 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                 <MapPin size={16} />
                 <span className="hidden sm:inline">Ubicación</span>
                 <span className="sm:hidden">Ubicación</span>
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="flex items-center gap-2">
+                <Camera size={16} />
+                <span className="hidden sm:inline">Fotos</span>
+                <span className="sm:hidden">Fotos</span>
+                {photos.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {photos.length}
+                  </Badge>
+                )}
               </TabsTrigger>
               <TabsTrigger value="additional" className="flex items-center gap-2">
                 <Buildings size={16} />
@@ -489,6 +554,115 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                   </div>
                 )}
               </Card>
+            </TabsContent>
+
+            <TabsContent value="photos" className="space-y-5 mt-6">
+              <Card className="p-5 bg-accent/5 border-accent/20">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-sm text-accent flex items-center gap-2">
+                    <Camera size={18} weight="duotone" />
+                    Fotos del Terreno / Cultivo
+                  </h3>
+                  <Badge variant="secondary" className="font-mono">
+                    {photos.length} foto{photos.length !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="photo-description" className="mb-2 block">
+                      Descripción de la foto (opcional)
+                    </Label>
+                    <Input
+                      id="photo-description"
+                      value={photoDescription}
+                      onChange={(e) => setPhotoDescription(e.target.value)}
+                      placeholder="Ej: Vista general del cultivo, Sistema de riego, Invernadero..."
+                      className="mb-3"
+                    />
+                    
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full border-dashed border-2 h-24 hover:bg-accent/10 hover:border-accent"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <UploadSimple size={32} weight="duotone" className="text-accent" />
+                        <span className="text-sm font-medium">Seleccionar fotos</span>
+                        <span className="text-xs text-muted-foreground">
+                          JPG, PNG, GIF - Máximo 5MB por imagen
+                        </span>
+                      </div>
+                    </Button>
+                  </div>
+
+                  {photos.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <ImageIcon size={64} className="mx-auto mb-4 opacity-20" weight="duotone" />
+                      <p className="text-sm">
+                        No hay fotos agregadas aún
+                      </p>
+                      <p className="text-xs mt-1">
+                        Agrega imágenes del terreno, cultivos o instalaciones
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {photos.map((photo) => (
+                        <div key={photo.id} className="relative group rounded-lg overflow-hidden border-2 border-border hover:border-accent transition-colors">
+                          <img
+                            src={photo.url}
+                            alt={photo.description || photo.fileName}
+                            className="w-full h-48 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              {photo.description && (
+                                <p className="text-white text-xs font-medium mb-2 line-clamp-2">
+                                  {photo.description}
+                                </p>
+                              )}
+                              <p className="text-white/70 text-xs truncate mb-2">
+                                {photo.fileName}
+                              </p>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeletePhoto(photo.id)}
+                                className="w-full h-8"
+                              >
+                                <Trash size={14} className="mr-1" weight="bold" />
+                                Eliminar
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {photos.length > 0 && (
+                <Card className="p-4 bg-blue-50 border-blue-200">
+                  <p className="text-sm text-blue-800 flex items-center gap-2">
+                    <ImageIcon size={18} weight="duotone" />
+                    Las fotos se guardarán con el cliente y podrás verlas en su ficha de información
+                  </p>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="additional" className="space-y-5 mt-6">

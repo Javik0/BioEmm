@@ -2,7 +2,7 @@ import { Client } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MapPin, Phone, Envelope, Trash, Flask } from '@phosphor-icons/react'
+import { MapPin, Phone, Envelope, Trash, Flask, Image as ImageIcon } from '@phosphor-icons/react'
 
 interface ClientListProps {
   clients: Client[]
@@ -34,9 +34,25 @@ export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDos
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {clients.map((client) => (
-        <Card key={client.id} className="hover:shadow-lg transition-shadow cursor-pointer group">
+        <Card key={client.id} className="hover:shadow-lg transition-shadow group overflow-hidden">
+          {client.photos && client.photos.length > 0 && (
+            <div className="relative h-40 overflow-hidden bg-muted">
+              <img
+                src={client.photos[0].url}
+                alt={client.photos[0].description || client.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              {client.photos.length > 1 && (
+                <Badge className="absolute top-2 right-2 bg-black/70 text-white border-0">
+                  <ImageIcon size={14} className="mr-1" weight="fill" />
+                  {client.photos.length}
+                </Badge>
+              )}
+            </div>
+          )}
+          
           <CardContent className="p-6">
-            <div onClick={() => onClientClick(client)}>
+            <div onClick={() => onClientClick(client)} className="cursor-pointer">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg mb-1">{client.name}</h3>
