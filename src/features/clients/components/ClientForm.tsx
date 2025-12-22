@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Client, CropType, ClientStatus, ClientPhoto, CROP_TYPES } from '@/types'
+import { Client, CropType, ClientStatus, ClientPhoto, CROP_TYPES, AgricultureType, ApplicationMode, AGRICULTURE_TYPES, APPLICATION_MODES, CropCategory, CROP_CATEGORIES } from '@/types'
 import { 
   MapPin, 
   X, 
@@ -64,6 +64,9 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [photos, setPhotos] = useState<ClientPhoto[]>([])
   const [photoDescription, setPhotoDescription] = useState('')
   const [cropTypeOpen, setCropTypeOpen] = useState(false)
+  const [agricultureType, setAgricultureType] = useState<AgricultureType | undefined>(undefined)
+  const [applicationMode, setApplicationMode] = useState<ApplicationMode | undefined>(undefined)
+  const [cropCategory, setCropCategory] = useState<CropCategory | undefined>(undefined)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -85,6 +88,9 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
       setPaymentTerms(editClient.paymentTerms || '')
       setPreferredContactMethod(editClient.preferredContactMethod || 'phone')
       setPhotos(editClient.photos || [])
+      setAgricultureType(editClient.agricultureType)
+      setApplicationMode(editClient.applicationMode)
+      setCropCategory(editClient.cropCategory)
     }
   }, [editClient])
 
@@ -120,7 +126,10 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
       city: city || undefined,
       paymentTerms: paymentTerms || undefined,
       preferredContactMethod,
-      photos: photos.length > 0 ? photos : undefined
+      photos: photos.length > 0 ? photos : undefined,
+      agricultureType,
+      applicationMode,
+      cropCategory
     })
 
     resetForm()
@@ -146,6 +155,9 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     setActiveTab('basic')
     setPhotos([])
     setPhotoDescription('')
+    setAgricultureType(undefined)
+    setApplicationMode(undefined)
+    setCropCategory(undefined)
   }
 
   const handleClose = () => {
@@ -427,6 +439,28 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
+                    <Label htmlFor="cropCategory" className="flex items-center gap-2">
+                      <Palette size={16} />
+                      Cultivo
+                    </Label>
+                    <Select
+                      value={cropCategory || ''}
+                      onValueChange={(value) => setCropCategory(value as CropCategory)}
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Seleccionar categoría..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CROP_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                     <Label htmlFor="cropType" className="flex items-center gap-2">
                       <Palette size={16} />
                       Tipo de Cultivo *
@@ -491,6 +525,50 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                       className="mt-1.5 font-mono"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="agricultureType" className="flex items-center gap-2">
+                      <Palette size={16} />
+                      Tipo de Agricultura
+                    </Label>
+                    <Select
+                      value={agricultureType || ''}
+                      onValueChange={(value) => setAgricultureType(value as AgricultureType)}
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Seleccionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AGRICULTURE_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="applicationMode" className="flex items-center gap-2">
+                      <Palette size={16} />
+                      Modo de Aplicación
+                    </Label>
+                    <Select
+                      value={applicationMode || ''}
+                      onValueChange={(value) => setApplicationMode(value as ApplicationMode)}
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Seleccionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {APPLICATION_MODES.map((mode) => (
+                          <SelectItem key={mode} value={mode}>
+                            {mode}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </Card>

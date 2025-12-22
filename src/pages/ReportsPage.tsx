@@ -1,21 +1,21 @@
 import { useKV } from '@github/spark/hooks'
-import { Dosification, Product, Client } from '@/types'
+import { Product, StockMovement } from '@/types'
 import { useClients } from '@/features/clients'
 import { ConsumptionReports } from '@/features/reports'
 
 export default function ReportsPage() {
   const { clients } = useClients()
-  const [dosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
+  const [stockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
   const [products] = useKV<Product[]>('bioemm-products', [])
 
-  const dosificationsList = dosifications || []
+  const stockMovementsList = stockMovements || []
   const productsList = products || []
   const clientsList = clients || []
 
   return (
     <div className="space-y-4">
       <ConsumptionReports
-        dosifications={dosificationsList}
+        stockMovements={stockMovementsList}
         products={productsList}
         clients={clientsList}
       />

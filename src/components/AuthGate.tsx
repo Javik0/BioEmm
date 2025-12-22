@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import logoImage from '@/assets/branding/BioEmm.jpg'
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useFirebaseAuth()
@@ -37,24 +38,56 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md p-6">
-          <h1 className="text-2xl font-semibold text-primary">BioEmm</h1>
-          <p className="text-sm text-muted-foreground mt-1">Inicia sesión para continuar</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4">
+        <Card className="w-full max-w-md p-8 shadow-xl border-primary/10">
+          {/* Logo principal */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="relative mb-4">
+              <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-primary/20 shadow-2xl shadow-primary/20">
+                <img 
+                  src={logoImage} 
+                  alt="BioEmm Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Efecto de brillo */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/30 to-transparent pointer-events-none" />
+            </div>
+            <h1 className="text-3xl font-bold text-primary tracking-tight">BioEmm</h1>
+            <p className="text-sm text-muted-foreground mt-1">Sistema de Gestión Agrícola</p>
+          </div>
 
-          <form onSubmit={handleLogin} className="mt-6 space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" />
+              <Input 
+                id="email" 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                className="mt-1" 
+                placeholder="tu@email.com"
+              />
             </div>
             <div>
               <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1" />
+              <Input 
+                id="password" 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                className="mt-1"
+                placeholder="••••••••"
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={busy || !email || !password}>
+            <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={busy || !email || !password}>
               {busy ? 'Ingresando…' : 'Ingresar'}
             </Button>
           </form>
+
+          <p className="text-xs text-center text-muted-foreground mt-6">
+            © 2026 BioEmm - Todos los derechos reservados
+          </p>
         </Card>
       </div>
     )

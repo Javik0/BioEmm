@@ -181,6 +181,12 @@ export const CROP_TYPES: CropType[] = [
 
 export type ClientStatus = 'Prospecto' | 'Activo' | 'Inactivo'
 
+export type AgricultureType = 'Ecológica' | 'Tradicional'
+export const AGRICULTURE_TYPES: AgricultureType[] = ['Ecológica', 'Tradicional']
+
+export type ApplicationMode = 'Foliar' | 'Radicular' | 'Ambos'
+export const APPLICATION_MODES: ApplicationMode[] = ['Foliar', 'Radicular', 'Ambos']
+
 export interface ClientPhoto {
   id: string
   url: string
@@ -212,6 +218,9 @@ export interface Client {
   paymentTerms?: string
   preferredContactMethod?: 'phone' | 'email' | 'whatsapp'
   photos?: ClientPhoto[]
+  agricultureType?: AgricultureType
+  applicationMode?: ApplicationMode
+  cropCategory?: CropCategory
 }
 
 export type ProductCategory = 
@@ -349,14 +358,6 @@ export const AGRICULTURE_OBJECTIVES: AgricultureObjective[] = [
   'Materias orgánicas y mejorantes de suelo',
   'Vigor y desarrollo vegetativo'
 ]
-
-export type AgricultureType = 'Ecológica' | 'Tradicional'
-
-export const AGRICULTURE_TYPES: AgricultureType[] = ['Ecológica', 'Tradicional']
-
-export type ApplicationMode = 'Foliar' | 'Radicular'
-
-export const APPLICATION_MODES: ApplicationMode[] = ['Foliar', 'Radicular']
 
 // Visitas programadas
 export type VisitStatus = 'Programada' | 'Completada' | 'Cancelada' | 'Reprogramada'

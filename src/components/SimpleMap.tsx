@@ -5,7 +5,8 @@ import { Client, Dosification, CropType, ClientStatus, CROP_TYPES } from '@/type
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Globe, MapTrifold, Stack, CaretDown, Funnel, X } from '@phosphor-icons/react'
+import { Input } from '@/components/ui/input'
+import { Globe, MapTrifold, Stack, CaretDown, Funnel, X, MagnifyingGlass } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,8 +133,14 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const [mapType, setMapType] = useState<'osm' | 'satellite' | 'hybrid'>('osm')
   const [selectedCropTypes, setSelectedCropTypes] = useState<Set<CropType>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClientStatus>>(new Set())
+  const [cropTypeSearch, setCropTypeSearch] = useState('')
 
   const statuses: ClientStatus[] = ['Activo', 'Inactivo', 'Prospecto']
+
+  // Filtrar tipos de cultivo por búsqueda
+  const filteredCropTypes = CROP_TYPES.filter(crop =>
+    crop.toLowerCase().includes(cropTypeSearch.toLowerCase())
+  )
 
   const toggleCropType = (cropType: CropType) => {
     setSelectedCropTypes((prev) => {
@@ -402,10 +409,10 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   }, [selectedLocation])
 
   return (
-    <Card className="relative w-full h-[600px] overflow-hidden">
+    <Card className="relative w-full h-[600px] overflow-hidden z-0">
       <div ref={mapContainerRef} className="w-full h-full" />
       
-      <div className="absolute top-4 right-4 z-[1000] flex gap-2">
+      <div className="absolute top-4 right-4 z-[400] flex gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -445,22 +452,41 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Por Tipo de Cultivo
             </DropdownMenuLabel>
+            <div className="px-2 pb-2">
+              <div className="relative">
+                <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                <Input
+                  placeholder="Buscar cultivo..."
+                  value={cropTypeSearch}
+                  onChange={(e) => setCropTypeSearch(e.target.value)}
+                  className="h-8 pl-8 text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
             <div className="max-h-[300px] overflow-y-auto">
-              {CROP_TYPES.map((cropType) => (
-                <DropdownMenuCheckboxItem
-                  key={cropType}
-                  checked={selectedCropTypes.has(cropType)}
-                  onCheckedChange={() => toggleCropType(cropType)}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ background: getCropColor(cropType) }}
-                    />
-                    <span className="text-sm">{cropType}</span>
-                  </div>
-                </DropdownMenuCheckboxItem>
-              ))}
+              {filteredCropTypes.length === 0 ? (
+                <div className="px-4 py-2 text-sm text-muted-foreground text-center">
+                  No se encontraron cultivos
+                </div>
+              ) : (
+                filteredCropTypes.map((cropType) => (
+                  <DropdownMenuCheckboxItem
+                    key={cropType}
+                    checked={selectedCropTypes.has(cropType)}
+                    onCheckedChange={() => toggleCropType(cropType)}
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ background: getCropColor(cropType) }}
+                      />
+                      <span className="text-sm">{cropType}</span>
+                    </div>
+                  </DropdownMenuCheckboxItem>
+                ))
+              )}
             </div>
             
             <DropdownMenuSeparator />

@@ -2,7 +2,7 @@ import { Client } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MapPin, Phone, Envelope, Trash, Flask, Image as ImageIcon } from '@phosphor-icons/react'
+import { MapPin, Phone, Envelope, Trash, Flask, Image as ImageIcon, UserMinus, UserPlus } from '@phosphor-icons/react'
 
 interface ClientListProps {
   clients: Client[]
@@ -10,9 +10,10 @@ interface ClientListProps {
   onDeleteClient: (clientId: string) => void
   onCreateDosification: (client: Client) => void
   onLocateClient?: (client: Client) => void
+  onReactivateClient?: (client: Client) => void
 }
 
-export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDosification, onLocateClient }: ClientListProps) {
+export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDosification, onLocateClient, onReactivateClient }: ClientListProps) {
   const getStatusColor = (status: string) => {
     const colors = {
       'Prospecto': 'bg-yellow-100 text-yellow-800',
@@ -82,35 +83,57 @@ export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDos
             </div>
 
             <div className="flex gap-2 pt-4 border-t">
-              <Button
-                size="sm"
-                variant="default"
-                className="flex-1"
-                onClick={() => onCreateDosification(client)}
-              >
-                <Flask className="mr-1" size={16} />
-                Dosificar
-              </Button>
+              {client.status === 'Inactivo' ? (
+                // Botones para clientes inactivos
+                <>
+                  {onReactivateClient && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      onClick={() => onReactivateClient(client)}
+                    >
+                      <UserPlus className="mr-1" size={16} />
+                      Reactivar
+                    </Button>
+                  )}
+                </>
+              ) : (
+                // Botones para clientes activos/prospectos
+                <>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="flex-1"
+                    onClick={() => onCreateDosification(client)}
+                  >
+                    <Flask className="mr-1" size={16} />
+                    Dosificar
+                  </Button>
 
-              {onLocateClient && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onLocateClient(client)}
-                  disabled={!client.location}
-                  title={client.location ? 'Ver en mapa' : 'Cliente sin ubicación'}
-                >
-                  <MapPin size={16} weight="fill" />
-                </Button>
+                  {onLocateClient && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onLocateClient(client)}
+                      disabled={!client.location}
+                      title={client.location ? 'Ver en mapa' : 'Cliente sin ubicación'}
+                    >
+                      <MapPin size={16} weight="fill" />
+                    </Button>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => onDeleteClient(client.id)}
+                    title="Desactivar cliente"
+                  >
+                    <UserMinus size={16} />
+                  </Button>
+                </>
               )}
-
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => onDeleteClient(client.id)}
-              >
-                <Trash size={16} />
-              </Button>
             </div>
           </CardContent>
         </Card>

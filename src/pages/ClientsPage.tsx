@@ -7,7 +7,18 @@ import { DosificationForm } from '@/features/dosifications'
 import { SimpleMap } from '@/components/SimpleMap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, MapTrifold, MagnifyingGlass } from '@phosphor-icons/react'
+import { Badge } from '@/components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Plus, MapTrifold, MagnifyingGlass, Warning, Trash, UserMinus, Users, UsersThree } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 export default function ClientsPage() {
@@ -25,6 +36,11 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showMap, setShowMap] = useState(false)
   const [focusClient, setFocusClient] = useState<Client | undefined>()
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active')
+  
+  // Estado para el modal de confirmación de desactivación
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
+  const [clientToDeactivate, setClientToDeactivate] = useState<Client | null>(null)
 
   const dosificationsList = dosifications || []
   const productsList = products || []
@@ -90,19 +106,42 @@ export default function ClientsPage() {
     })()
   }
 
-  const handleDeleteClient = (clientId: string) => {
+  const handleDeactivateClient = (clientId: string) => {
     const client = clientsList.find(c => c.id === clientId)
     if (!client) return
+    
+    // Abrir modal de confirmación
+    setClientToDeactivate(client)
+    setDeactivateDialogOpen(true)
+  }
 
-    if (confirm(`¿Eliminar cliente ${client.name}?`)) {
-      void (async () => {
-        try {
-          await deleteClient(clientId)
-          toast.success('Cliente eliminado')
-        } catch (err: any) {
-          toast.error(err?.message || 'No se pudo eliminar el cliente (Firestore)')
-        }
-      })()
+  const confirmDeactivateClient = async () => {
+    if (!clientToDeactivate) return
+    
+    try {
+      // Marcar como inactivo en lugar de eliminar
+      await upsertClient({
+        ...clientToDeactivate,
+        status: 'Inactivo'
+      })
+      toast.success(`Cliente "${clientToDeactivate.name}" marcado como inactivo`)
+    } catch (err: any) {
+      toast.error(err?.message || 'No se pudo desactivar el cliente')
+    } finally {
+      setDeactivateDialogOpen(false)
+      setClientToDeactivate(null)
+    }
+  }
+
+  const handleReactivateClient = async (client: Client) => {
+    try {
+      await upsertClient({
+        ...client,
+        status: 'Activo'
+      })
+      toast.success(`Cliente "${client.name}" reactivado correctamente`)
+    } catch (err: any) {
+      toast.error(err?.message || 'No se pudo reactivar el cliente')
     }
   }
 
@@ -148,7 +187,17 @@ export default function ClientsPage() {
     toast.success('Dosificación registrada correctamente')
   }
 
-  const filteredClients = clientsList.filter(client =>
+  // Filtrar clientes por búsqueda y estado
+  const activeClients = clientsList.filter(c => c.status !== 'Inactivo')
+  const inactiveClients = clientsList.filter(c => c.status === 'Inactivo')
+  
+  const baseClients = statusFilter === 'all' 
+    ? clientsList 
+    : statusFilter === 'inactive' 
+      ? inactiveClients 
+      : activeClients
+
+  const filteredClients = baseClients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.phone?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -156,6 +205,48 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Filtros de estado */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant={statusFilter === 'active' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('active')}
+          className="gap-1"
+        >
+          <Users size={16} />
+          Activos
+          <Badge variant="secondary" className="ml-1 bg-green-100 text-green-700">
+            {activeClients.length}
+          </Badge>
+        </Button>
+        <Button
+          variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('inactive')}
+          className="gap-1"
+        >
+          <UserMinus size={16} />
+          Inactivos
+          {inactiveClients.length > 0 && (
+            <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-600">
+              {inactiveClients.length}
+            </Badge>
+          )}
+        </Button>
+        <Button
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+          className="gap-1"
+        >
+          <UsersThree size={16} />
+          Todos
+          <Badge variant="secondary" className="ml-1">
+            {clientsList.length}
+          </Badge>
+        </Button>
+      </div>
+
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
@@ -181,7 +272,7 @@ export default function ClientsPage() {
 
       {showMap && (
         <SimpleMap
-          clients={filteredClients}
+          clients={filteredClients.filter(c => c.status !== 'Inactivo')}
           onClientClick={handleViewDetail}
           focusClient={focusClient}
         />
@@ -190,7 +281,7 @@ export default function ClientsPage() {
       <ClientList
         clients={filteredClients}
         onClientClick={handleViewDetail}
-        onDeleteClient={handleDeleteClient}
+        onDeleteClient={handleDeactivateClient}
         onCreateDosification={openDosificationForm}
         onLocateClient={(client) => {
           if (client.location) {
@@ -198,6 +289,7 @@ export default function ClientsPage() {
             setShowMap(true)
           }
         }}
+        onReactivateClient={statusFilter !== 'active' ? handleReactivateClient : undefined}
       />
 
       <ClientForm
@@ -237,6 +329,40 @@ export default function ClientsPage() {
           products={productsList}
         />
       )}
+
+      {/* Modal de confirmación para desactivar cliente */}
+      <AlertDialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
+              <Warning size={24} weight="fill" />
+              ¿Desactivar cliente?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left space-y-2">
+              <p>
+                Estás a punto de marcar como <strong>inactivo</strong> al cliente:
+              </p>
+              <p className="font-semibold text-foreground text-lg">
+                {clientToDeactivate?.name}
+              </p>
+              <p className="text-sm">
+                El cliente no será eliminado permanentemente. Podrás reactivarlo en cualquier momento 
+                desde la sección de "Clientes Inactivos".
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeactivateClient}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              <UserMinus size={16} className="mr-2" />
+              Sí, desactivar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
