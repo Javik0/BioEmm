@@ -1,9 +1,10 @@
-import { Client } from '@/types'
+import { Client, ClientPhoto } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { PhotoManager } from '@/components/PhotoManager'
 import { 
   User, 
   Phone, 
@@ -16,7 +17,8 @@ import {
   ChatText,
   Crosshair,
   Image as ImageIcon,
-  PencilSimple
+  PencilSimple,
+  ImageSquare
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 
@@ -25,10 +27,12 @@ interface ClientDetailProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onEdit?: (client: Client) => void
+  onUpdatePhotos?: (clientId: string, photos: ClientPhoto[]) => void
 }
 
-export function ClientDetail({ client, open, onOpenChange, onEdit }: ClientDetailProps) {
+export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhotos }: ClientDetailProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
+  const [photoManagerOpen, setPhotoManagerOpen] = useState(false)
 
   if (!client) return null
 
@@ -45,6 +49,12 @@ export function ClientDetail({ client, open, onOpenChange, onEdit }: ClientDetai
     if (onEdit) {
       onEdit(client)
       onOpenChange(false)
+    }
+  }
+
+  const handleUpdatePhotos = (photos: ClientPhoto[]) => {
+    if (onUpdatePhotos) {
+      onUpdatePhotos(client.id, photos)
     }
   }
 
@@ -73,12 +83,26 @@ export function ClientDetail({ client, open, onOpenChange, onEdit }: ClientDetai
           </DialogHeader>
 
           <div className="space-y-6 mt-4">
-            {client.photos && client.photos.length > 0 && (
-              <Card className="p-5 bg-accent/5 border-accent/20">
-                <h3 className="font-semibold text-sm text-accent mb-4 flex items-center gap-2">
+            <Card className="p-5 bg-accent/5 border-accent/20">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm text-accent flex items-center gap-2">
                   <ImageIcon size={18} weight="duotone" />
-                  Fotos del Terreno / Cultivo ({client.photos.length})
+                  Fotos del Terreno / Cultivo {client.photos && client.photos.length > 0 && `(${client.photos.length})`}
                 </h3>
+                {onUpdatePhotos && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPhotoManagerOpen(true)}
+                    className="border-accent/30 hover:bg-accent/10"
+                  >
+                    <ImageSquare size={16} className="mr-2" weight="bold" />
+                    Gestionar Fotos
+                  </Button>
+                )}
+              </div>
+              
+              {client.photos && client.photos.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {client.photos.map((photo, index) => (
                     <div
@@ -103,8 +127,25 @@ export function ClientDetail({ client, open, onOpenChange, onEdit }: ClientDetai
                     </div>
                   ))}
                 </div>
-              </Card>
-            )}
+              ) : (
+                <div className="text-center py-8">
+                  <ImageIcon size={48} className="mx-auto mb-3 text-muted-foreground opacity-30" />
+                  <p className="text-sm text-muted-foreground mb-3">
+                    No hay fotos del terreno o cultivo
+                  </p>
+                  {onUpdatePhotos && (
+                    <Button
+                      size="sm"
+                      onClick={() => setPhotoManagerOpen(true)}
+                      className="bg-accent hover:bg-accent/90"
+                    >
+                      <ImageSquare size={16} className="mr-2" weight="bold" />
+                      Agregar Fotos
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Card>
 
             <Card className="p-5 bg-primary/5 border-primary/20">
               <h3 className="font-semibold text-sm text-primary mb-4 flex items-center gap-2">
@@ -295,6 +336,16 @@ export function ClientDetail({ client, open, onOpenChange, onEdit }: ClientDetai
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {onUpdatePhotos && (
+        <PhotoManager
+          open={photoManagerOpen}
+          onOpenChange={setPhotoManagerOpen}
+          photos={client.photos || []}
+          onUpdatePhotos={handleUpdatePhotos}
+          clientName={client.name}
+        />
       )}
     </>
   )

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Client, Dosification, Product, StockMovement } from '@/types'
+import { Client, Dosification, Product, StockMovement, ClientPhoto } from '@/types'
 import { ClientForm } from '@/components/ClientForm'
 import { ClientList } from '@/components/ClientList'
 import { ClientDetail } from '@/components/ClientDetail'
@@ -194,6 +194,21 @@ function App() {
   const handleEditClient = (client: Client) => {
     setEditingClient(client)
     setClientFormOpen(true)
+  }
+
+  const handleUpdatePhotos = (clientId: string, photos: ClientPhoto[]) => {
+    setClients((current) =>
+      (current || []).map((c) =>
+        c.id === clientId
+          ? { ...c, photos: photos.length > 0 ? photos : undefined }
+          : c
+      )
+    )
+    toast.success('Fotos actualizadas correctamente')
+    
+    if (selectedClient && selectedClient.id === clientId) {
+      setSelectedClient({ ...selectedClient, photos: photos.length > 0 ? photos : undefined })
+    }
   }
 
   const handleCreateProduct = (productData: Omit<Product, 'id' | 'createdAt'>) => {
@@ -657,6 +672,7 @@ function App() {
         open={clientDetailOpen}
         onOpenChange={setClientDetailOpen}
         onEdit={handleEditClient}
+        onUpdatePhotos={handleUpdatePhotos}
       />
 
       <DosificationForm
