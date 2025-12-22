@@ -24,6 +24,12 @@ export interface Client {
   status: ClientStatus
   createdAt: string
   notes?: string
+  address?: string
+  ruc?: string
+  region?: string
+  city?: string
+  paymentTerms?: string
+  preferredContactMethod?: 'phone' | 'email' | 'whatsapp'
 }
 
 export type ProductCategory = 
