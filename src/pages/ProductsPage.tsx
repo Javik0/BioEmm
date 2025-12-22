@@ -66,6 +66,10 @@ export default function ProductsPage() {
     }
   }
 
+  const handleAdjustStock = () => {
+    toast.info('Para ajustar stock, usa la pestaña “Inventario”.')
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
@@ -84,21 +88,23 @@ export default function ProductsPage() {
 
       <ProductList
         products={productsList}
-        onEdit={handleEditProduct}
-        onDelete={handleDeleteProduct}
+        onEditProduct={handleEditProduct}
+        onDeleteProduct={handleDeleteProduct}
+        onAdjustStock={handleAdjustStock}
       />
 
       <ProductForm
         open={productFormOpen}
         onOpenChange={setProductFormOpen}
         onSubmit={handleCreateProduct}
-        initialData={editingProduct}
+        editProduct={editingProduct}
       />
 
       <CatalogImporter
         open={catalogImporterOpen}
         onOpenChange={setCatalogImporterOpen}
         onImport={handleImportCatalog}
+        existingProducts={productsList}
       />
     </div>
   )

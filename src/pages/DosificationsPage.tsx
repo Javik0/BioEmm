@@ -1,37 +1,18 @@
-import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Client, Dosification, Product, StockMovement } from '@/types'
-import { useClients } from '@/features/clients'
-import { DosificationForm, CropCalculator } from '@/features/dosifications'
+import { Dosification, Product, StockMovement } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calculator } from '@phosphor-icons/react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Flask } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 export default function DosificationsPage() {
-  const { clients: clientsList } = useClients()
   const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
   const [products, setProducts] = useKV<Product[]>('bioemm-products', [])
   const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
-  const [dosificationFormOpen, setDosificationFormOpen] = useState(false)
-  const [selectedClient, setSelectedClient] = useState<Client | undefined>()
-  const [activeTab, setActiveTab] = useState('calculator')
 
   const dosificationsList = dosifications || []
   const productsList = products || []
-
-  const handleCreateDosification = (dosificationData: Omit<Dosification, 'id' | 'date'>) => {
-    const newDosification: Dosification = {
-      ...dosificationData,
-      id: Date.now().toString(),
-      date: new Date().toISOString()
-    }
-    
-    setDosifications((current) => [...(current || []), newDosification])
-    setDosificationFormOpen(false)
-    setSelectedClient(undefined)
-    toast.success('Dosificación registrada correctamente')
-  }
 
   const handleApplyDosification = (dosification: Dosification) => {
     if (dosification.status === 'Aplicada' || dosification.status === 'Completada') {
@@ -123,44 +104,83 @@ export default function DosificationsPage() {
     )
   }
 
-  const openDosificationForm = (client: Client) => {
-    setSelectedClient(client)
-    setDosificationFormOpen(true)
-  }
-
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="calculator">
-            <Calculator className="mr-2" />
-            Calculadora
-          </TabsTrigger>
-          <TabsTrigger value="history">Historial</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="calculator" className="space-y-4">
-          <CropCalculator
-            clients={clientsList}
-            products={productsList}
-            onCreateDosification={openDosificationForm}
-          />
-        </TabsContent>
-
-        <TabsContent value="history" className="space-y-4">
-          {/* Aquí podrías agregar un componente para mostrar el historial de dosificaciones */}
-          <p>Historial de dosificaciones (por implementar)</p>
-        </TabsContent>
-      </Tabs>
-
-      {selectedClient && (
-        <DosificationForm
-          open={dosificationFormOpen}
-          onOpenChange={setDosificationFormOpen}
-          onSubmit={handleCreateDosification}
-          client={selectedClient}
-          products={productsList}
-        />
+      {dosificationsList.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Flask size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-lg text-muted-foreground mb-2">No hay dosificaciones registradas</p>
+            <p className="text-sm text-muted-foreground">
+              Crea una desde la lista de clientes
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {dosificationsList
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((dosification) => (
+              <Card key={dosification.id}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{dosification.clientName}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {new Date(dosification.date).toLocaleDateString('es-EC', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          dosification.status === 'Aplicada'
+                            ? 'default'
+                            : dosification.status === 'Completada'
+                              ? 'default'
+                              : 'secondary'
+                        }
+                        className={
+                          dosification.status === 'Aplicada'
+                            ? 'bg-green-600'
+                            : dosification.status === 'Completada'
+                              ? 'bg-blue-600'
+                              : ''
+                        }
+                      >
+                        {dosification.status}
+                      </Badge>
+                      {dosification.status === 'Pendiente' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleApplyDosification(dosification)}
+                          className="bg-accent hover:bg-accent/90"
+                        >
+                          <Flask className="mr-1" size={16} weight="bold" />
+                          Aplicar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {dosification.products.map((p) => (
+                      <div key={p.productId} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{p.productName}</span>
+                        <span className="font-medium">
+                          {p.quantity} {p.unit}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+        </div>
       )}
     </div>
   )

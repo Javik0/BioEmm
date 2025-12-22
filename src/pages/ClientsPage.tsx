@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { Client } from '@/types'
+import { useKV } from '@github/spark/hooks'
+import type { Client, ClientPhoto, Dosification, Product } from '@/types'
 import { useClients, ClientForm, ClientList, ClientDetail } from '@/features/clients'
+import { DosificationForm } from '@/features/dosifications'
 import { SimpleMap } from '@/components/SimpleMap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,12 +11,21 @@ import { toast } from 'sonner'
 
 export default function ClientsPage() {
   const { clients: clientsList, upsertClient, deleteClient } = useClients()
+  const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
+  const [products] = useKV<Product[]>('bioemm-products', [])
+
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const [clientDetailOpen, setClientDetailOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | undefined>()
   const [editingClient, setEditingClient] = useState<Client | undefined>()
+  const [dosificationFormOpen, setDosificationFormOpen] = useState(false)
+  const [dosificationClient, setDosificationClient] = useState<Client | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showMap, setShowMap] = useState(false)
+  const [focusClient, setFocusClient] = useState<Client | undefined>()
+
+  const dosificationsList = dosifications || []
+  const productsList = products || []
 
   const normalizeLocation = (location?: Client['location']) => {
     if (!location) return undefined
@@ -80,6 +91,38 @@ export default function ClientsPage() {
     setClientDetailOpen(true)
   }
 
+  const handleUpdatePhotos = (clientId: string, photos: ClientPhoto[]) => {
+    const client = clientsList.find((c) => c.id === clientId)
+    if (!client) return
+
+    void (async () => {
+      try {
+        await upsertClient({ ...client, photos })
+        toast.success('Fotos actualizadas')
+      } catch (err: any) {
+        toast.error(err?.message || 'No se pudieron guardar las fotos (Firestore)')
+      }
+    })()
+  }
+
+  const openDosificationForm = (client: Client) => {
+    setDosificationClient(client)
+    setDosificationFormOpen(true)
+  }
+
+  const handleCreateDosification = (dosificationData: Omit<Dosification, 'id' | 'date'>) => {
+    const newDosification: Dosification = {
+      ...dosificationData,
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+    }
+
+    setDosifications((current) => [...(current || []), newDosification])
+    setDosificationFormOpen(false)
+    setDosificationClient(null)
+    toast.success('Dosificación registrada correctamente')
+  }
+
   const filteredClients = clientsList.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,28 +158,54 @@ export default function ClientsPage() {
         <SimpleMap
           clients={filteredClients}
           onClientClick={handleViewDetail}
+          focusClient={focusClient}
         />
       )}
 
       <ClientList
         clients={filteredClients}
-        onEdit={handleEditClient}
-        onDelete={handleDeleteClient}
-        onViewDetail={handleViewDetail}
+        onClientClick={handleViewDetail}
+        onDeleteClient={handleDeleteClient}
+        onCreateDosification={openDosificationForm}
+        onLocateClient={(client) => {
+          if (client.location) {
+            setFocusClient(client)
+            setShowMap(true)
+          }
+        }}
       />
 
       <ClientForm
         open={clientFormOpen}
-        onOpenChange={setClientFormOpen}
+        onOpenChange={(open) => {
+          setClientFormOpen(open)
+          if (!open) setEditingClient(undefined)
+        }}
         onSubmit={handleCreateClient}
-        initialData={editingClient}
+        editClient={editingClient}
       />
 
       <ClientDetail
-        client={selectedClient}
+        client={selectedClient ?? null}
         open={clientDetailOpen}
         onOpenChange={setClientDetailOpen}
+        onEdit={handleEditClient}
+        onUpdatePhotos={handleUpdatePhotos}
+        dosifications={dosificationsList}
       />
+
+      {dosificationClient && (
+        <DosificationForm
+          open={dosificationFormOpen}
+          onOpenChange={(open) => {
+            setDosificationFormOpen(open)
+            if (!open) setDosificationClient(null)
+          }}
+          onSubmit={handleCreateDosification}
+          client={dosificationClient}
+          products={productsList}
+        />
+      )}
     </div>
   )
 }

@@ -9,9 +9,10 @@ interface ClientListProps {
   onClientClick: (client: Client) => void
   onDeleteClient: (clientId: string) => void
   onCreateDosification: (client: Client) => void
+  onLocateClient?: (client: Client) => void
 }
 
-export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDosification }: ClientListProps) {
+export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDosification, onLocateClient }: ClientListProps) {
   const getStatusColor = (status: string) => {
     const colors = {
       'Prospecto': 'bg-yellow-100 text-yellow-800',
@@ -90,6 +91,19 @@ export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDos
                 <Flask className="mr-1" size={16} />
                 Dosificar
               </Button>
+
+              {onLocateClient && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onLocateClient(client)}
+                  disabled={!client.location}
+                  title={client.location ? 'Ver en mapa' : 'Cliente sin ubicación'}
+                >
+                  <MapPin size={16} weight="fill" />
+                </Button>
+              )}
+
               <Button
                 size="sm"
                 variant="destructive"

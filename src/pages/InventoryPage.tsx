@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Product, StockMovement } from '@/types'
 import { StockAdjustmentForm, StockHistory } from '@/features/inventory'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 
@@ -59,7 +58,6 @@ export default function InventoryPage() {
         <TabsContent value="history" className="space-y-4">
           <StockHistory
             movements={stockMovementsList}
-            products={productsList}
           />
         </TabsContent>
 
@@ -74,7 +72,7 @@ export default function InventoryPage() {
           open={stockAdjustmentOpen}
           onOpenChange={setStockAdjustmentOpen}
           product={selectedProduct}
-          adjustmentType={adjustmentType}
+          type={adjustmentType}
           onSubmit={handleStockMovement}
         />
       )}

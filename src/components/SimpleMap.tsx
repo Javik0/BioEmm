@@ -22,6 +22,7 @@ interface SimpleMapProps {
   onClientClick?: (client: Client) => void
   onMapClick?: (lat: number, lng: number) => void
   selectedLocation?: { lat: number; lng: number }
+  focusClient?: Client
 }
 
 const getCropColor = (cropType: string) => {
@@ -121,7 +122,7 @@ const createSelectedIcon = () => {
   })
 }
 
-export function SimpleMap({ clients, dosifications = [], onClientClick, onMapClick, selectedLocation }: SimpleMapProps) {
+export function SimpleMap({ clients, dosifications = [], onClientClick, onMapClick, selectedLocation, focusClient }: SimpleMapProps) {
   const mapRef = useRef<L.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
@@ -238,6 +239,23 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
       mapRef.current.addLayer(baseLayersRef.current.hybrid)
     }
   }, [mapType])
+
+  // Focus on specific client (zoom + open popup)
+  useEffect(() => {
+    if (!mapRef.current || !focusClient?.location) return
+
+    mapRef.current.setView(
+      [focusClient.location.lat, focusClient.location.lng],
+      14,
+      { animate: true, duration: 0.8 }
+    )
+
+    // open popup if marker exists
+    const marker = markersRef.current.get(focusClient.id)
+    if (marker) {
+      marker.openPopup()
+    }
+  }, [focusClient])
 
   useEffect(() => {
     if (!mapRef.current) return
@@ -392,8 +410,9 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
           <DropdownMenuTrigger asChild>
             <Button
               size="sm"
-              className={`bg-white/95 backdrop-blur shadow-lg border hover:bg-white ${
-                hasActiveFilters ? 'border-primary text-primary' : 'border-gray-200'
+              variant="outline"
+              className={`bg-white hover:bg-gray-100 shadow-md border border-gray-300 text-gray-700 ${
+                hasActiveFilters ? 'border-primary text-primary' : ''
               }`}
             >
               <Funnel className="mr-2" size={18} weight={hasActiveFilters ? 'fill' : 'bold'} />
@@ -476,7 +495,8 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
           <DropdownMenuTrigger asChild>
             <Button
               size="sm"
-              className="bg-white/95 backdrop-blur shadow-lg border border-gray-200 hover:bg-white"
+              variant="outline"
+              className="bg-white hover:bg-gray-100 shadow-md border border-gray-300 text-gray-700"
             >
               <Stack className="mr-2" size={18} weight="bold" />
               {mapType === 'osm' ? 'Mapa Base' : mapType === 'satellite' ? 'Satélite' : 'Híbrido'}
