@@ -14,6 +14,7 @@ import ProductsPage from '@/pages/ProductsPage'
 import DosificationsPage from '@/pages/DosificationsPage'
 import InventoryPage from '@/pages/InventoryPage'
 import ReportsPage from '@/pages/ReportsPage'
+import logoImage from '@/assets/branding/BioEmm.jpg'
 
 function App() {
   const { clients: clientsList } = useClients()
@@ -36,11 +37,25 @@ function App() {
         <Toaster />
       
         <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-semibold text-primary">BioEmm</h1>
-                <p className="text-sm text-muted-foreground">Sistema de Gestión de Clientes Agrícolas</p>
+              <div className="flex items-center gap-4">
+                {/* Logo con estilo profesional */}
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary/20 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105">
+                    <img 
+                      src={logoImage} 
+                      alt="BioEmm Logo" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {/* Efecto de brillo */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-primary tracking-tight">BioEmm</h1>
+                  <p className="text-xs text-muted-foreground">Sistema de Gestión Agrícola</p>
+                </div>
               </div>
             </div>
           </div>
