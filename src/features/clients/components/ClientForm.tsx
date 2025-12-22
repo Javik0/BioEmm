@@ -431,30 +431,31 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                       <Palette size={16} />
                       Tipo de Cultivo *
                     </Label>
-                    <Popover open={cropTypeOpen} onOpenChange={setCropTypeOpen}>
+                    <Popover open={cropTypeOpen} onOpenChange={setCropTypeOpen} modal={true}>
                       <PopoverTrigger asChild>
                         <Button
+                          type="button"
                           variant="outline"
                           role="combobox"
                           aria-expanded={cropTypeOpen}
-                          className="w-full justify-between mt-1.5"
+                          className="w-full justify-between mt-1.5 font-normal"
                         >
                           {cropType || "Seleccionar cultivo..."}
                           <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
+                      <PopoverContent className="w-[280px] p-0" align="start" style={{ zIndex: 9999 }}>
                         <Command>
-                          <CommandInput placeholder="Buscar cultivo..." />
-                          <CommandList>
+                          <CommandInput placeholder="Buscar cultivo..." className="h-9" />
+                          <CommandList className="max-h-[200px]">
                             <CommandEmpty>No se encontró el cultivo.</CommandEmpty>
                             <CommandGroup>
                               {CROP_TYPES.map((crop) => (
                                 <CommandItem
                                   key={crop}
                                   value={crop}
-                                  onSelect={(currentValue) => {
-                                    setCropType(currentValue as CropType)
+                                  onSelect={() => {
+                                    setCropType(crop as CropType)
                                     setCropTypeOpen(false)
                                   }}
                                 >

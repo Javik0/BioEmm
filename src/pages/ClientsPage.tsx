@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import type { Client, ClientPhoto, Dosification, Product } from '@/types'
 import { useClients, ClientForm, ClientList, ClientDetail } from '@/features/clients'
+import { uploadClientPhoto, isBase64Url } from '@/features/clients/services/storageService'
 import { DosificationForm } from '@/features/dosifications'
 import { SimpleMap } from '@/components/SimpleMap'
 import { Button } from '@/components/ui/button'
@@ -51,6 +52,28 @@ export default function ClientsPage() {
 
     void (async () => {
       try {
+        // Subir fotos base64 a Storage antes de guardar
+        if (client.photos && client.photos.length > 0) {
+          const uploadedPhotos: ClientPhoto[] = []
+          for (const photo of client.photos) {
+            if (isBase64Url(photo.url)) {
+              // Subir a Storage
+              try {
+                const downloadURL = await uploadClientPhoto(photo.url, client.id, photo.id)
+                uploadedPhotos.push({ ...photo, url: downloadURL })
+              } catch (uploadErr) {
+                console.error('Error subiendo foto:', uploadErr)
+                // Mantener la foto base64 si falla la subida
+                uploadedPhotos.push(photo)
+              }
+            } else {
+              // Ya es una URL de Storage
+              uploadedPhotos.push(photo)
+            }
+          }
+          client.photos = uploadedPhotos
+        }
+
         await upsertClient(client)
         toast.success(
           editingClient

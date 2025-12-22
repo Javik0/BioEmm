@@ -46,77 +46,67 @@ function App() {
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-8">
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Users size={20} />
-                  Total Clientes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{clientsList.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {activeClients} activos
-                </p>
+        <main className="container mx-auto px-4 py-4">
+          {/* Dashboard Cards - Compactas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <Card className="py-2">
+              <CardContent className="p-3 flex items-center gap-3">
+                <Users size={18} className="text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Total Clientes</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold">{clientsList.length}</span>
+                    <span className="text-xs text-muted-foreground">{activeClients} activos</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <MapTrifold size={20} />
-                  Hectáreas Totales
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold font-mono">{totalHectares.toFixed(1)}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Bajo gestión
-                </p>
+            <Card className="py-2">
+              <CardContent className="p-3 flex items-center gap-3">
+                <MapTrifold size={18} className="text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Hectáreas Totales</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold font-mono">{totalHectares.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">Bajo gestión</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Flask size={20} />
-                  Dosificaciones
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{dosificationsList.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Registradas
-                </p>
+            <Card className="py-2">
+              <CardContent className="p-3 flex items-center gap-3">
+                <Flask size={18} className="text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Dosificaciones</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold">{dosificationsList.length}</span>
+                    <span className="text-xs text-muted-foreground">Registradas</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className={criticalStockProducts > 0 ? 'border-red-300 bg-red-50' : lowStockProducts > 0 ? 'border-yellow-300 bg-yellow-50' : ''}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Package size={20} />
-                  Inventario
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{productsList.length}</div>
-                <div className="flex items-center gap-2 mt-1">
-                  {criticalStockProducts > 0 ? (
-                    <Badge className="bg-red-600 text-white flex items-center gap-1">
-                      <WarningCircle weight="fill" size={14} />
-                      {criticalStockProducts} crítico{criticalStockProducts > 1 ? 's' : ''}
-                    </Badge>
-                  ) : lowStockProducts > 0 ? (
-                    <Badge className="bg-yellow-600 text-white flex items-center gap-1">
-                      <WarningCircle weight="fill" size={14} />
-                      {lowStockProducts} bajo{lowStockProducts > 1 ? 's' : ''}
-                    </Badge>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Stock normal</p>
-                  )}
+            <Card className={`py-2 ${criticalStockProducts > 0 ? 'border-red-300 bg-red-50' : lowStockProducts > 0 ? 'border-yellow-300 bg-yellow-50' : ''}`}>
+              <CardContent className="p-3 flex items-center gap-3">
+                <Package size={18} className="text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Inventario</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-bold">{productsList.length}</span>
+                    {criticalStockProducts > 0 ? (
+                      <Badge className="bg-red-600 text-white text-xs px-1 py-0">
+                        {criticalStockProducts} crítico
+                      </Badge>
+                    ) : lowStockProducts > 0 ? (
+                      <Badge className="bg-yellow-600 text-white text-xs px-1 py-0">
+                        {lowStockProducts} bajo
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Stock normal</span>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
