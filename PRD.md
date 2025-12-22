@@ -13,23 +13,40 @@ BioEmm es una plataforma de gestión integral para distribuidoras agrícolas que
 ## Essential Features
 
 ### Registro de Clientes
-- **Functionality**: Formulario completo para capturar datos del cliente (nombre, contacto, tipo de cultivo, hectáreas, ubicación GPS)
-- **Purpose**: Centralizar toda la información comercial de clientes potenciales y activos
+- **Functionality**: Formulario completo para capturar datos del cliente (nombre, contacto, tipo de cultivo, hectáreas, ubicación GPS) con selección interactiva de ubicación mediante pin moderno
+- **Purpose**: Centralizar toda la información comercial de clientes potenciales y activos con georeferenciación precisa
 - **Trigger**: Click en botón "Nuevo Cliente" en el dashboard principal
-- **Progression**: Click botón → Formulario modal → Ingresar datos → Seleccionar ubicación en mapa → Guardar → Cliente aparece en lista y mapa
-- **Success criteria**: Cliente guardado correctamente con coordenadas GPS y visible en el mapa interactivo
+- **Progression**: Click botón → Formulario modal → Ingresar datos → Tab "Ubicación" → Click en mapa → Pin moderno aparece instantáneamente → Coordenadas se actualizan en tiempo real → Guardar → Cliente aparece en lista y mapa
+- **Success criteria**: 
+  - Cliente guardado correctamente con coordenadas GPS y visible en el mapa interactivo
+  - Pin de selección moderno con animación de entrada (bounce-in) y pulsación continua
+  - Coordenadas GPS actualizadas instantáneamente al hacer clic en cualquier punto del mapa
+  - Pin con icono distintivo (gradiente naranja, sombra, animación de onda expansiva)
+  - Popup automático mostrando las coordenadas exactas de forma clara
+  - Posibilidad de cambiar ubicación haciendo clic en otro punto sin cerrar el formulario
 
 ### Mapa Interactivo de Clientes
-- **Functionality**: Visualización geográfica de todos los clientes con marcadores clicables, soporte para múltiples capas base (OpenStreetMap y Google Satellite), zoom dinámico, y navegación fluida
-- **Purpose**: Optimizar rutas de visita, identificar zonas de alta concentración, planificar territorio, visualizar terrenos reales mediante vista satelital
-- **Trigger**: Vista por defecto del módulo "Clientes"
-- **Progression**: Cargar mapa → Seleccionar capa base (Mapa/Satélite) → Renderizar marcadores → Click marcador → Ver ficha cliente → Opción de editar/dosificar
+- **Functionality**: Visualización geográfica de todos los clientes con marcadores clicables personalizados por cultivo, soporte para múltiples capas base (OpenStreetMap, Google Satellite, Google Hybrid), zoom dinámico, navegación fluida, filtros por cultivo y estado, y selector de ubicación con pin moderno animado
+- **Purpose**: Optimizar rutas de visita, identificar zonas de alta concentración, planificar territorio, visualizar terrenos reales mediante vista satelital, y permitir selección precisa de ubicaciones para nuevos clientes
+- **Trigger**: Vista por defecto del módulo "Clientes" o modal de creación de cliente
+- **Progression**: Cargar mapa → Seleccionar capa base (Mapa/Satélite/Híbrido) → Renderizar marcadores → Click marcador → Ver ficha cliente → Opción de editar/dosificar → O bien: Click en mapa vacío → Pin moderno aparece con animación → Coordenadas actualizadas instantáneamente
 - **Success criteria**: 
-  - Todos los clientes visibles en mapa con marcadores interactivos
+  - Todos los clientes visibles en mapa con marcadores interactivos diferenciados por color según cultivo
   - Cambio fluido entre capas base sin perder posición/zoom
   - Vista satelital de alta resolución para inspección de terrenos
   - Navegación suave con zoom, arrastre y click funcionando perfectamente
   - Controles de capa visibles y accesibles en la interfaz
+  - Pin de selección moderno con:
+    * Diseño distintivo con gradiente naranja-rojo (#FF6B35 a #E87D3E)
+    * Animación de entrada (bounce-in) al aparecer
+    * Animación de pulsación continua para alta visibilidad
+    * Efecto de ondas expansivas (ripple) alrededor del pin
+    * Sombra proyectada para efecto de profundidad
+    * Popup automático con coordenadas GPS en formato legible
+    * Actualización instantánea al hacer clic en nueva ubicación
+  - Filtros funcionales por tipo de cultivo y estado del cliente
+  - Contador de clientes filtrados vs totales
+  - Leyenda de cultivos visible con colores correspondientes
 
 ### Sistema de Dosificaciones
 - **Functionality**: Calculadora que genera recomendaciones de productos según hectáreas, cultivo y tipo de aplicación, conectada directamente con el inventario

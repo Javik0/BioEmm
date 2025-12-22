@@ -55,19 +55,40 @@ const createCustomIcon = (color: string) => {
 
 const createSelectedIcon = () => {
   const svgIcon = `
-    <svg width="40" height="52" viewBox="0 0 40 52" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 0C11.163 0 4 7.163 4 16c0 12 16 36 16 36s16-24 16-36c0-8.837-7.163-16-16-16z" 
-            fill="#E87D3E" stroke="white" stroke-width="3"/>
-      <circle cx="20" cy="16" r="8" fill="white"/>
-      <circle cx="20" cy="16" r="4" fill="#E87D3E"/>
+    <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+          <feOffset dx="0" dy="4" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.3"/>
+          </feComponentTransfer>
+          <feMerge> 
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/> 
+          </feMerge>
+        </filter>
+        <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#E87D3E;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <g filter="url(#shadow)">
+        <path d="M24 2C14.059 2 6 10.059 6 20c0 14 18 42 18 42s18-28 18-42c0-9.941-8.059-18-18-18z" 
+              fill="url(#pinGradient)" stroke="white" stroke-width="4"/>
+        <circle cx="24" cy="20" r="10" fill="white"/>
+        <circle cx="24" cy="20" r="6" fill="#FF6B35">
+          <animate attributeName="r" values="6;7;6" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+      </g>
     </svg>
   `
   return L.divIcon({
     html: svgIcon,
     className: 'custom-map-marker selected-marker',
-    iconSize: [40, 52],
-    iconAnchor: [20, 52],
-    popupAnchor: [0, -52]
+    iconSize: [48, 64],
+    iconAnchor: [24, 64],
+    popupAnchor: [0, -64]
   })
 }
 
@@ -301,22 +322,34 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
       )
       
       marker.bindPopup(`
-        <div style="font-family: 'IBM Plex Sans', sans-serif; text-align: center;">
-          <div style="font-weight: 600; font-size: 13px; color: #E87D3E;">
-            📍 Nueva Ubicación
+        <div style="font-family: 'IBM Plex Sans', sans-serif; text-align: center; padding: 4px;">
+          <div style="font-weight: 700; font-size: 15px; color: #FF6B35; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span style="font-size: 18px;">📍</span>
+            <span>Ubicación Seleccionada</span>
           </div>
-          <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-            ${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}
+          <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 10px; border-radius: 8px; border: 2px solid #e2e8f0;">
+            <div style="font-size: 10px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Coordenadas GPS</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #1e293b; font-weight: 600; line-height: 1.6;">
+              <div>Lat: ${selectedLocation.lat.toFixed(6)}</div>
+              <div>Lng: ${selectedLocation.lng.toFixed(6)}</div>
+            </div>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; font-style: italic;">
+            ✓ Haz clic en otro lugar para cambiar
           </div>
         </div>
-      `).openPopup()
+      `, {
+        className: 'custom-popup',
+        maxWidth: 280,
+        closeButton: false
+      }).openPopup()
 
       marker.addTo(mapRef.current)
       selectedMarkerRef.current = marker
 
-      mapRef.current.setView([selectedLocation.lat, selectedLocation.lng], 12, {
+      mapRef.current.setView([selectedLocation.lat, selectedLocation.lng], 13, {
         animate: true,
-        duration: 0.5
+        duration: 0.8
       })
     }
   }, [selectedLocation])
