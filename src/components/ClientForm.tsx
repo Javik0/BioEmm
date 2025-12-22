@@ -59,6 +59,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [photos, setPhotos] = useState<ClientPhoto[]>([])
   const [photoDescription, setPhotoDescription] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (editClient) {
@@ -174,6 +175,9 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     const files = e.target.files
     if (!files || files.length === 0) return
 
+    const fileCount = files.length
+    let processedCount = 0
+
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith('image/')) {
         toast.error(`${file.name} no es una imagen válida`)
@@ -195,14 +199,25 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
           uploadedAt: new Date().toISOString()
         }
         setPhotos((current) => [...current, newPhoto])
-        setPhotoDescription('')
-        toast.success(`Foto "${file.name}" agregada`)
+        processedCount++
+        
+        if (processedCount === fileCount) {
+          if (fileCount === 1) {
+            toast.success(`Foto "${file.name}" agregada`)
+          } else {
+            toast.success(`${fileCount} fotos agregadas correctamente`)
+          }
+          setPhotoDescription('')
+        }
       }
       reader.readAsDataURL(file)
     })
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = ''
     }
   }
 
@@ -591,20 +606,51 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
                       id="photo-upload"
                     />
                     
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full border-dashed border-2 h-24 hover:bg-accent/10 hover:border-accent"
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <UploadSimple size={32} weight="duotone" className="text-accent" />
-                        <span className="text-sm font-medium">Seleccionar fotos</span>
-                        <span className="text-xs text-muted-foreground">
-                          JPG, PNG, GIF - Máximo 5MB por imagen
-                        </span>
-                      </div>
-                    </Button>
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="camera-capture"
+                    />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant="default"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="w-full h-24 bg-gradient-to-br from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 border-2 border-accent/30 shadow-lg"
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <Camera size={36} weight="duotone" className="text-white" />
+                          <span className="text-sm font-semibold text-white">Tomar Foto</span>
+                          <span className="text-xs text-white/90">
+                            Abrir cámara
+                          </span>
+                        </div>
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full border-dashed border-2 h-24 hover:bg-primary/5 hover:border-primary"
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <UploadSimple size={32} weight="duotone" className="text-primary" />
+                          <span className="text-sm font-medium">Seleccionar Fotos</span>
+                          <span className="text-xs text-muted-foreground">
+                            Desde galería
+                          </span>
+                        </div>
+                      </Button>
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground mt-3 text-center">
+                      Formatos: JPG, PNG, GIF - Máximo 5MB por imagen
+                    </p>
                   </div>
 
                   {photos.length === 0 ? (
