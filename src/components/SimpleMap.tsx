@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Client, Dosification } from '@/types'
+import { Client, Dosification, CropType, ClientStatus } from '@/types'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Globe, MapTrifold, Stack, CaretDown } from '@phosphor-icons/react'
+import { Globe, MapTrifold, Stack, CaretDown, Funnel, X } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu'
 
 interface SimpleMapProps {
@@ -76,6 +79,48 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const baseLayersRef = useRef<{ osm: L.TileLayer; satellite: L.TileLayer; hybrid: L.TileLayer } | null>(null)
   
   const [mapType, setMapType] = useState<'osm' | 'satellite' | 'hybrid'>('osm')
+  const [selectedCropTypes, setSelectedCropTypes] = useState<Set<CropType>>(new Set())
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<ClientStatus>>(new Set())
+
+  const cropTypes: CropType[] = ['Flores', 'Hortalizas', 'Frutas', 'Granos', 'Tubérculos', 'Otro']
+  const statuses: ClientStatus[] = ['Activo', 'Inactivo', 'Prospecto']
+
+  const toggleCropType = (cropType: CropType) => {
+    setSelectedCropTypes((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(cropType)) {
+        newSet.delete(cropType)
+      } else {
+        newSet.add(cropType)
+      }
+      return newSet
+    })
+  }
+
+  const toggleStatus = (status: ClientStatus) => {
+    setSelectedStatuses((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(status)) {
+        newSet.delete(status)
+      } else {
+        newSet.add(status)
+      }
+      return newSet
+    })
+  }
+
+  const clearAllFilters = () => {
+    setSelectedCropTypes(new Set())
+    setSelectedStatuses(new Set())
+  }
+
+  const filteredClients = clients.filter((client) => {
+    const cropTypeMatch = selectedCropTypes.size === 0 || selectedCropTypes.has(client.cropType)
+    const statusMatch = selectedStatuses.size === 0 || selectedStatuses.has(client.status)
+    return cropTypeMatch && statusMatch
+  })
+
+  const hasActiveFilters = selectedCropTypes.size > 0 || selectedStatuses.size > 0
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -151,7 +196,7 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
     markersRef.current.forEach(marker => marker.remove())
     markersRef.current.clear()
 
-    clients.forEach(client => {
+    filteredClients.forEach(client => {
       if (!client.location) return
 
       const clientDosifications = dosifications.filter(d => d.clientId === client.id)
@@ -168,7 +213,9 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
 
       const statusBadge = client.status === 'Activo' 
         ? '<span style="background: #16a34a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">ACTIVO</span>'
-        : '<span style="background: #6b7280; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">INACTIVO</span>'
+        : client.status === 'Inactivo'
+        ? '<span style="background: #6b7280; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">INACTIVO</span>'
+        : '<span style="background: #f97316; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">PROSPECTO</span>'
 
       const dosificationInfo = clientDosifications.length > 0 
         ? `
@@ -237,7 +284,7 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
       marker.addTo(mapRef.current!)
       markersRef.current.set(client.id, marker)
     })
-  }, [clients, dosifications, onClientClick])
+  }, [filteredClients, dosifications, onClientClick])
 
   useEffect(() => {
     if (!mapRef.current) return
@@ -278,7 +325,89 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
     <Card className="relative w-full h-[600px] overflow-hidden">
       <div ref={mapContainerRef} className="w-full h-full" />
       
-      <div className="absolute top-4 right-4 z-[1000]">
+      <div className="absolute top-4 right-4 z-[1000] flex gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              className={`bg-white/95 backdrop-blur shadow-lg border hover:bg-white ${
+                hasActiveFilters ? 'border-primary text-primary' : 'border-gray-200'
+              }`}
+            >
+              <Funnel className="mr-2" size={18} weight={hasActiveFilters ? 'fill' : 'bold'} />
+              Filtros
+              {hasActiveFilters && (
+                <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center bg-primary text-xs">
+                  {selectedCropTypes.size + selectedStatuses.size}
+                </Badge>
+              )}
+              <CaretDown className="ml-2" size={14} weight="bold" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="flex items-center justify-between">
+              <span>Filtrar Clientes</span>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="h-6 px-2 text-xs"
+                >
+                  <X size={14} className="mr-1" />
+                  Limpiar
+                </Button>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Por Tipo de Cultivo
+            </DropdownMenuLabel>
+            {cropTypes.map((cropType) => (
+              <DropdownMenuCheckboxItem
+                key={cropType}
+                checked={selectedCropTypes.has(cropType)}
+                onCheckedChange={() => toggleCropType(cropType)}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: getCropColor(cropType) }}
+                  />
+                  <span>{cropType}</span>
+                </div>
+              </DropdownMenuCheckboxItem>
+            ))}
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Por Estado
+            </DropdownMenuLabel>
+            {statuses.map((status) => (
+              <DropdownMenuCheckboxItem
+                key={status}
+                checked={selectedStatuses.has(status)}
+                onCheckedChange={() => toggleStatus(status)}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      status === 'Activo'
+                        ? 'bg-green-600'
+                        : status === 'Inactivo'
+                        ? 'bg-gray-500'
+                        : 'bg-orange-500'
+                    }`}
+                  />
+                  <span>{status}</span>
+                </div>
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -336,7 +465,10 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
 
       <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-lg text-sm font-semibold shadow-md z-[1000] border border-gray-200">
         <span className="text-primary">🗺️ Ecuador</span>
-        <span className="text-gray-500 ml-2">· {clients.filter(c => c.location).length} clientes ubicados</span>
+        <span className="text-gray-500 ml-2">
+          · {filteredClients.filter(c => c.location).length} de {clients.filter(c => c.location).length} clientes
+          {hasActiveFilters && ' (filtrados)'}
+        </span>
       </div>
     </Card>
   )
