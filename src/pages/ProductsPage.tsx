@@ -1,53 +1,62 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Product } from '@/types'
-import { ProductForm, ProductList, CatalogImporter } from '@/features/products'
+import { ProductForm, ProductList, CatalogImporter, useProducts } from '@/features/products'
 import { Button } from '@/components/ui/button'
 import { Plus, Upload } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 export default function ProductsPage() {
-  const [products, setProducts] = useKV<Product[]>('bioemm-products', [])
+  const { products, loading, error, upsertProduct, deleteProduct } = useProducts()
   const [productFormOpen, setProductFormOpen] = useState(false)
   const [catalogImporterOpen, setCatalogImporterOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | undefined>()
 
   const productsList = products || []
 
-  const handleCreateProduct = (productData: Omit<Product, 'id' | 'createdAt'>) => {
-    if (editingProduct) {
-      setProducts((current) =>
-        (current || []).map((p) =>
-          p.id === editingProduct.id
-            ? { ...productData, id: editingProduct.id, createdAt: editingProduct.createdAt }
-            : p
-        )
-      )
-      toast.success(`Producto ${productData.name} actualizado`)
-      setEditingProduct(undefined)
-    } else {
-      const newProduct: Product = {
-        ...productData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString()
+  const handleCreateProduct = async (productData: Omit<Product, 'id' | 'createdAt'>) => {
+    try {
+      if (editingProduct) {
+        await upsertProduct({
+          ...productData,
+          id: editingProduct.id,
+          createdAt: editingProduct.createdAt
+        })
+        toast.success(`Producto ${productData.name} actualizado`)
+        setEditingProduct(undefined)
+      } else {
+        const newProduct: Product = {
+          ...productData,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString()
+        }
+        await upsertProduct(newProduct)
+        toast.success(`Producto ${newProduct.name} agregado al inventario`)
       }
       
-      setProducts((current) => [...(current || []), newProduct])
-      toast.success(`Producto ${newProduct.name} agregado al inventario`)
+      setProductFormOpen(false)
+    } catch (error) {
+      toast.error('Error al guardar el producto')
+      console.error(error)
     }
-    
-    setProductFormOpen(false)
   }
 
-  const handleImportCatalog = (importedProducts: Omit<Product, 'id' | 'createdAt'>[]) => {
-    const newProducts: Product[] = importedProducts.map(productData => ({
-      ...productData,
-      id: Date.now().toString() + Math.random(),
-      createdAt: new Date().toISOString()
-    }))
-    
-    setProducts((current) => [...(current || []), ...newProducts])
-    toast.success(`${newProducts.length} productos importados correctamente`)
+  const handleImportCatalog = async (importedProducts: Omit<Product, 'id' | 'createdAt'>[]) => {
+    try {
+      const promises = importedProducts.map(productData => {
+        const newProduct: Product = {
+          ...productData,
+          id: Date.now().toString() + Math.random(),
+          createdAt: new Date().toISOString()
+        }
+        return upsertProduct(newProduct)
+      })
+      
+      await Promise.all(promises)
+      toast.success(`${importedProducts.length} productos importados correctamente`)
+    } catch (error) {
+      toast.error('Error al importar productos')
+      console.error(error)
+    }
     setCatalogImporterOpen(false)
   }
 
@@ -56,13 +65,18 @@ export default function ProductsPage() {
     setProductFormOpen(true)
   }
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     const product = productsList.find(p => p.id === productId)
     if (!product) return
 
     if (confirm(`¿Eliminar producto ${product.name}?`)) {
-      setProducts((current) => (current || []).filter(p => p.id !== productId))
-      toast.success('Producto eliminado')
+      try {
+        await deleteProduct(productId)
+        toast.success('Producto eliminado')
+      } catch (error) {
+        toast.error('Error al eliminar el producto')
+        console.error(error)
+      }
     }
   }
 

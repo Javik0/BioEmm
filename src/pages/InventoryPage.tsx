@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Product, StockMovement } from '@/types'
+import { useProducts } from '@/features/products'
+import { useKV } from '@github/spark/hooks'
 import { StockAdjustmentForm, StockHistory } from '@/features/inventory'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 
 export default function InventoryPage() {
-  const [products, setProducts] = useKV<Product[]>('bioemm-products', [])
+  const { products, upsertProduct } = useProducts()
   const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -21,7 +22,7 @@ export default function InventoryPage() {
     setStockAdjustmentOpen(true)
   }
 
-  const handleStockMovement = (movementData: Omit<StockMovement, 'id' | 'createdAt'>) => {
+  const handleStockMovement = async (movementData: Omit<StockMovement, 'id' | 'createdAt'>) => {
     const newMovement: StockMovement = {
       ...movementData,
       id: Date.now().toString(),
@@ -30,17 +31,20 @@ export default function InventoryPage() {
     
     setStockMovements((current) => [...(current || []), newMovement])
     
-    setProducts((current) =>
-      (current || []).map((p) =>
-        p.id === movementData.productId
-          ? { 
-              ...p, 
-              currentStock: movementData.newStock,
-              lastRestockDate: movementData.type === 'entry' ? new Date().toISOString() : p.lastRestockDate
-            }
-          : p
-      )
-    )
+    const product = productsList.find(p => p.id === movementData.productId)
+    if (product) {
+      try {
+        await upsertProduct({
+          ...product,
+          currentStock: movementData.newStock,
+          lastRestockDate: movementData.type === 'entry' ? new Date().toISOString() : product.lastRestockDate
+        })
+      } catch (error) {
+        toast.error('Error al actualizar el stock')
+        console.error(error)
+        return
+      }
+    }
     
     const actionText = movementData.type === 'entry' ? 'Entrada' : movementData.type === 'exit' ? 'Salida' : 'Ajuste'
     toast.success(`${actionText} de stock registrada`)

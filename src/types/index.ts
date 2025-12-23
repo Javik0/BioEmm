@@ -381,3 +381,57 @@ export interface Visit {
   completionNotes?: string
   createdAt: string
 }
+
+// Roles y Permisos
+export type Permission = 
+  | 'clientes.ver'
+  | 'clientes.crear'
+  | 'clientes.editar'
+  | 'clientes.eliminar'
+  | 'productos.ver'
+  | 'productos.crear'
+  | 'productos.editar'
+  | 'productos.eliminar'
+  | 'inventario.ver'
+  | 'inventario.gestionar'
+  | 'dosificaciones.ver'
+  | 'dosificaciones.crear'
+  | 'dosificaciones.editar'
+  | 'reportes.ver'
+  | 'reportes.exportar'
+  | 'usuarios.ver'
+  | 'usuarios.crear'
+  | 'usuarios.editar'
+  | 'usuarios.eliminar'
+  | 'roles.ver'
+  | 'roles.crear'
+  | 'roles.editar'
+  | 'roles.eliminar'
+  | 'configuracion.ver'
+  | 'configuracion.editar'
+
+export interface Role {
+  id: string
+  name: string
+  description: string
+  permissions: Permission[]
+  isSystem: boolean // Roles del sistema no se pueden eliminar
+  createdAt: string
+  updatedAt: string
+}
+
+export type UserStatus = 'Activo' | 'Inactivo' | 'Suspendido'
+
+export interface User {
+  id: string
+  email: string
+  displayName: string
+  phone?: string
+  roleId: string
+  roleName: string
+  status: UserStatus
+  avatar?: string
+  createdAt: string
+  updatedAt: string
+  lastLogin?: string
+}

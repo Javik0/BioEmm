@@ -1,29 +1,33 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Product, Dosification } from '@/types'
+import { Dosification } from '@/types'
 import { AuthGate } from '@/components/AuthGate'
 import { useClients } from '@/features/clients'
+import { useProducts } from '@/features/products'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, Package, WarningCircle, ChartBar, Calculator } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, Package, WarningCircle, ChartBar, Calculator, ShieldCheck, UsersThree } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { UserProfile } from '@/components/UserProfile'
 import ClientsPage from '@/pages/ClientsPage'
 import ProductsPage from '@/pages/ProductsPage'
 import DosificationsPage from '@/pages/DosificationsPage'
 import InventoryPage from '@/pages/InventoryPage'
 import ReportsPage from '@/pages/ReportsPage'
+import UsersPage from '@/pages/UsersPage'
+import RolesPage from '@/pages/RolesPage'
 import logoImage from '@/assets/branding/BioEmm.jpg'
 
 function App() {
   const { clients: clientsList } = useClients()
+  const { products: productsList } = useProducts()
   const [dosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
-  const [products] = useKV<Product[]>('bioemm-products', [])
   const [activeTab, setActiveTab] = useState('clients')
 
   const dosificationsList = dosifications || []
-  const productsList = products || []
 
   // Estadísticas
   const totalHectares = clientsList.reduce((sum, client) => sum + client.hectares, 0)
@@ -45,7 +49,7 @@ function App() {
                   <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary/20 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105">
                     <img 
                       src={logoImage} 
-                      alt="BioEmm Logo" 
+                      alt="BioEMS Logo" 
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -53,9 +57,15 @@ function App() {
                   <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-primary tracking-tight">BioEmm</h1>
+                  <h1 className="text-2xl font-bold text-primary tracking-tight">BioEMS</h1>
                   <p className="text-xs text-muted-foreground">Sistema de Gestión Agrícola</p>
                 </div>
+              </div>
+              
+              {/* Theme Toggle y User Profile */}
+              <div className="flex items-center gap-3">
+                <ThemeToggle />
+                <UserProfile />
               </div>
             </div>
           </div>
@@ -129,7 +139,7 @@ function App() {
 
           {/* Tabs Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="clients" className="flex items-center gap-2">
                 <Users size={18} />
                 Clientes
@@ -155,6 +165,14 @@ function App() {
                 <ChartBar size={18} />
                 Reportes
               </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <UsersThree size={18} />
+                Usuarios
+              </TabsTrigger>
+              <TabsTrigger value="roles" className="flex items-center gap-2">
+                <ShieldCheck size={18} />
+                Roles
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="clients">
@@ -175,6 +193,14 @@ function App() {
 
             <TabsContent value="reports">
               <ReportsPage />
+            </TabsContent>
+
+            <TabsContent value="users">
+              <UsersPage />
+            </TabsContent>
+
+            <TabsContent value="roles">
+              <RolesPage />
             </TabsContent>
           </Tabs>
         </main>

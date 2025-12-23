@@ -1,5 +1,6 @@
 import { useKV } from '@github/spark/hooks'
-import { Dosification, Product, StockMovement } from '@/types'
+import { Dosification, StockMovement } from '@/types'
+import { useProducts } from '@/features/products'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,13 +9,13 @@ import { toast } from 'sonner'
 
 export default function DosificationsPage() {
   const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
-  const [products, setProducts] = useKV<Product[]>('bioemm-products', [])
+  const { products, upsertProduct } = useProducts()
   const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
 
   const dosificationsList = dosifications || []
   const productsList = products || []
 
-  const handleApplyDosification = (dosification: Dosification) => {
+  const handleApplyDosification = async (dosification: Dosification) => {
     if (dosification.status === 'Aplicada' || dosification.status === 'Completada') {
       toast.error('Esta dosificación ya fue aplicada')
       return
@@ -77,18 +78,24 @@ export default function DosificationsPage() {
       setStockMovements((current) => [...(current || []), movement])
     })
 
-    setProducts((current) =>
-      (current || []).map((p) => {
-        const dosProduct = dosification.products.find(dp => dp.productId === p.id)
-        if (dosProduct) {
-          return {
-            ...p,
-            currentStock: p.currentStock - dosProduct.quantity
-          }
+    // Actualizar stock de productos
+    try {
+      const updatePromises = dosification.products.map(async (dosProduct) => {
+        const product = productsList.find(p => p.id === dosProduct.productId)
+        if (product) {
+          return upsertProduct({
+            ...product,
+            currentStock: product.currentStock - dosProduct.quantity
+          })
         }
-        return p
       })
-    )
+
+      await Promise.all(updatePromises)
+    } catch (error) {
+      toast.error('Error al actualizar el stock')
+      console.error(error)
+      return
+    }
 
     setDosifications((current) =>
       (current || []).map((d) =>
