@@ -1,19 +1,48 @@
-import { useKV } from '@github/spark/hooks'
+import { useState } from 'react'
 import { Dosification, StockMovement } from '@/types'
 import { useProducts } from '@/features/products'
+import { useDosifications } from '@/features/dosifications'
+import { useStockMovements } from '@/features/inventory'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Flask } from '@phosphor-icons/react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Flask, DownloadSimple, Warning } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { importDataService } from '@/features/dosifications/services/importService'
 
 export default function DosificationsPage() {
-  const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [dosificationToApply, setDosificationToApply] = useState<Dosification | null>(null)
+  const { dosifications, updateDosification } = useDosifications()
   const { products, upsertProduct } = useProducts()
-  const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
+  const { addStockMovement } = useStockMovements()
 
   const dosificationsList = dosifications || []
   const productsList = products || []
+
+  const handleImportData = async () => {
+    try {
+      toast.loading('Importando datos...')
+      const productsCount = await importDataService.importProducts()
+      const protocolsCount = await importDataService.importProtocols()
+      toast.dismiss()
+      toast.success(`Importación completada: ${productsCount} productos y ${protocolsCount} protocolos agregados.`)
+    } catch (error) {
+      toast.dismiss()
+      console.error(error)
+      toast.error('Error al importar datos')
+    }
+  }
 
   const handleApplyDosification = async (dosification: Dosification) => {
     if (dosification.status === 'Aplicada' || dosification.status === 'Completada') {
@@ -47,19 +76,21 @@ export default function DosificationsPage() {
       )
       return
     }
+    setDosificationToApply(dosification)
+    setConfirmDialogOpen(true)
+  }
 
-    if (!confirm(`¿Aplicar dosificación para ${dosification.clientName}? Se descontará el stock automáticamente.`)) {
-      return
-    }
+  const confirmApplyDosification = async () => {
+    if (!dosificationToApply) return
+    const dosification = dosificationToApply
 
-    dosification.products.forEach(dosProduct => {
+    const movementPromises = dosification.products.map(async (dosProduct) => {
       const product = productsList.find(p => p.id === dosProduct.productId)
       if (!product) return
 
       const newStock = product.currentStock - dosProduct.quantity
 
-      const movement: StockMovement = {
-        id: Date.now().toString() + Math.random(),
+      const movement: Omit<StockMovement, 'id'> = {
         productId: product.id,
         productName: product.name,
         type: 'exit',
@@ -75,8 +106,10 @@ export default function DosificationsPage() {
         createdAt: new Date().toISOString()
       }
 
-      setStockMovements((current) => [...(current || []), movement])
+      await addStockMovement(movement)
     })
+
+    await Promise.all(movementPromises)
 
     // Actualizar stock de productos
     try {
@@ -97,12 +130,11 @@ export default function DosificationsPage() {
       return
     }
 
-    setDosifications((current) =>
-      (current || []).map((d) =>
-        d.id === dosification.id ? { ...d, status: 'Aplicada' as const } : d
-      )
-    )
-
+    await updateDosification(dosification.id, { status: 'Aplicada' })
+  
+    setConfirmDialogOpen(false)
+    setDosificationToApply(null)
+  
     toast.success(
       <div>
         <p className="font-semibold">Dosificación aplicada correctamente</p>
@@ -113,6 +145,12 @@ export default function DosificationsPage() {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end mb-4">
+        <Button variant="outline" onClick={handleImportData}>
+          <DownloadSimple className="mr-2" />
+          Importar Datos Iniciales
+        </Button>
+      </div>
       {dosificationsList.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -189,6 +227,32 @@ export default function DosificationsPage() {
             ))}
         </div>
       )}
+
+      {/* Modal de confirmación */}
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Warning size={24} className="text-orange-500" weight="fill" />
+              ¿Aplicar dosificación?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Se aplicará la dosificación para el cliente <strong>{dosificationToApply?.clientName}</strong>.
+              </p>
+              <p>
+                Esta acción descontará automáticamente los productos del inventario y marcará la dosificación como "Aplicada".
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDosificationToApply(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmApplyDosification}>
+              Confirmar y Aplicar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

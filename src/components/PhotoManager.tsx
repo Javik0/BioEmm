@@ -16,10 +16,21 @@ import {
   X,
   FloppyDisk,
   ImageSquare,
-  Spinner
+  Spinner,
+  Warning
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { uploadClientPhoto, deleteClientPhoto, isStorageUrl } from '@/features/clients/services/storageService'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface PhotoManagerProps {
   open: boolean
@@ -37,6 +48,8 @@ export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clien
   const [editDescription, setEditDescription] = useState('')
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [photoToDelete, setPhotoToDelete] = useState<ClientPhoto | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -93,9 +106,7 @@ export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clien
       }
       setPhotoDescription('')
     }
-
     setIsUploading(false)
-
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -104,20 +115,29 @@ export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clien
     }
   }
 
-  const handleDeletePhoto = async (photoId: string) => {
+  const handleDeletePhoto = (photoId: string) => {
     const photo = localPhotos.find(p => p.id === photoId)
-    if (photo && confirm(`¿Eliminar foto "${photo.fileName}"?`)) {
-      // Si es una URL de Storage, eliminar del storage
-      if (isStorageUrl(photo.url)) {
-        try {
-          await deleteClientPhoto(photo.url)
-        } catch (error) {
-          console.warn('No se pudo eliminar del storage:', error)
-        }
-      }
-      setLocalPhotos((current) => current.filter(p => p.id !== photoId))
-      toast.success('Foto eliminada')
+    if (photo) {
+      setPhotoToDelete(photo)
+      setDeleteDialogOpen(true)
     }
+  }
+
+  const confirmDeletePhoto = async () => {
+    if (!photoToDelete) return
+    
+    // Si es una URL de Storage, eliminar del storage
+    if (isStorageUrl(photoToDelete.url)) {
+      try {
+        await deleteClientPhoto(photoToDelete.url)
+      } catch (error) {
+        console.warn('No se pudo eliminar del storage:', error)
+      }
+    }
+    setLocalPhotos((current) => current.filter(p => p.id !== photoToDelete.id))
+    toast.success('Foto eliminada')
+    setDeleteDialogOpen(false)
+    setPhotoToDelete(null)
   }
 
   const handleEditDescription = (photoId: string) => {
@@ -410,6 +430,27 @@ export function PhotoManager({ open, onOpenChange, photos, onUpdatePhotos, clien
                   )}
                 </div>
                 <div className="flex gap-2">
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Warning size={24} weight="fill" />
+              ¿Eliminar foto?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Estás a punto de eliminar la foto <strong>{photoToDelete?.fileName}</strong>.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPhotoToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeletePhoto} className="bg-red-600 hover:bg-red-700">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
                   {selectedPhotoIndex > 0 && (
                     <Button
                       onClick={() => setSelectedPhotoIndex(selectedPhotoIndex - 1)}

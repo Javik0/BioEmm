@@ -241,6 +241,7 @@ export type ProductUnit =
 export interface Product {
   id: string
   name: string
+  code?: string
   category: ProductCategory
   unit: ProductUnit
   currentStock: number
@@ -434,4 +435,25 @@ export interface User {
   createdAt: string
   updatedAt: string
   lastLogin?: string
+}
+
+export interface ProtocolProduct {
+  code: string
+  name: string
+  quantity: number
+  unit: string
+  price: number
+}
+
+export interface ProtocolStage {
+  name: string
+  products: ProtocolProduct[]
+}
+
+export interface DosificationProtocol {
+  id?: string
+  name: string
+  type: string
+  stages: ProtocolStage[]
+  createdAt?: string
 }

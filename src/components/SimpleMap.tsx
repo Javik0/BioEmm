@@ -432,7 +432,7 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
               <CaretDown className="ml-2" size={14} weight="bold" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 text-foreground">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>Filtrar Clientes</span>
               {hasActiveFilters && (

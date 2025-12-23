@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Product, StockMovement } from '@/types'
 import { useProducts } from '@/features/products'
-import { useKV } from '@github/spark/hooks'
+import { useStockMovements } from '@/features/inventory'
 import { StockAdjustmentForm, StockHistory } from '@/features/inventory'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 
 export default function InventoryPage() {
   const { products, upsertProduct } = useProducts()
-  const [stockMovements, setStockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
+  const { stockMovements, addStockMovement } = useStockMovements()
   const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [adjustmentType, setAdjustmentType] = useState<'entry' | 'exit' | 'adjustment'>('entry')
@@ -23,13 +23,12 @@ export default function InventoryPage() {
   }
 
   const handleStockMovement = async (movementData: Omit<StockMovement, 'id' | 'createdAt'>) => {
-    const newMovement: StockMovement = {
+    const newMovement: Omit<StockMovement, 'id'> = {
       ...movementData,
-      id: Date.now().toString(),
       createdAt: new Date().toISOString()
     }
     
-    setStockMovements((current) => [...(current || []), newMovement])
+    await addStockMovement(newMovement)
     
     const product = productsList.find(p => p.id === movementData.productId)
     if (product) {

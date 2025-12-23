@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import type { Client, ClientPhoto, Dosification, Product, Visit } from '@/types'
 import { useClients, ClientForm, ClientList, ClientDetail } from '@/features/clients'
+import { useProducts } from '@/features/products'
 import { uploadClientPhoto, isBase64Url } from '@/features/clients/services/storageService'
-import { DosificationForm } from '@/features/dosifications'
+import { DosificationForm, useDosifications } from '@/features/dosifications'
+import { useVisits, VisitForm } from '@/features/visits'
 import { SimpleMap } from '@/components/SimpleMap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,9 +24,9 @@ import { toast } from 'sonner'
 
 export default function ClientsPage() {
   const { clients: clientsList, upsertClient, deleteClient } = useClients()
-  const [dosifications, setDosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
-  const [products] = useKV<Product[]>('bioemm-products', [])
-  const [visits] = useKV<Visit[]>('bioemm-visits', [])
+  const { dosifications, addDosification } = useDosifications()
+  const { products } = useProducts()
+  const { visits, addVisit } = useVisits()
 
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const [clientDetailOpen, setClientDetailOpen] = useState(false)
@@ -33,6 +34,8 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | undefined>()
   const [dosificationFormOpen, setDosificationFormOpen] = useState(false)
   const [dosificationClient, setDosificationClient] = useState<Client | null>(null)
+  const [visitFormOpen, setVisitFormOpen] = useState(false)
+  const [visitClient, setVisitClient] = useState<Client | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showMap, setShowMap] = useState(false)
   const [focusClient, setFocusClient] = useState<Client | undefined>()
@@ -174,17 +177,35 @@ export default function ClientsPage() {
     setDosificationFormOpen(true)
   }
 
-  const handleCreateDosification = (dosificationData: Omit<Dosification, 'id' | 'date'>) => {
-    const newDosification: Dosification = {
+  const handleCreateDosification = async (dosificationData: Omit<Dosification, 'id' | 'date'>) => {
+    const newDosification: Omit<Dosification, 'id'> = {
       ...dosificationData,
-      id: Date.now().toString(),
       date: new Date().toISOString(),
     }
 
-    setDosifications((current) => [...(current || []), newDosification])
-    setDosificationFormOpen(false)
-    setDosificationClient(null)
-    toast.success('Dosificación registrada correctamente')
+    const success = await addDosification(newDosification)
+    if (success) {
+      setDosificationFormOpen(false)
+      setDosificationClient(null)
+      toast.success('Dosificación registrada correctamente')
+    }
+  }
+
+  const handleScheduleVisit = async (visitData: Omit<Visit, 'id' | 'createdAt' | 'status'>) => {
+    const newVisit: Omit<Visit, 'id'> = {
+      ...visitData,
+      status: 'Programada',
+      createdAt: new Date().toISOString()
+    }
+
+    try {
+      await addVisit(newVisit)
+      setVisitFormOpen(false)
+      setVisitClient(null)
+      toast.success('Visita programada correctamente')
+    } catch (error) {
+      toast.error('Error al programar la visita')
+    }
   }
 
   // Filtrar clientes por búsqueda y estado
@@ -302,20 +323,47 @@ export default function ClientsPage() {
         editClient={editingClient}
       />
 
-      <ClientDetail
-        client={selectedClient ?? null}
-        open={clientDetailOpen}
-        onOpenChange={setClientDetailOpen}
-        onEdit={handleEditClient}
-        onUpdatePhotos={handleUpdatePhotos}
-        dosifications={dosificationsList}
-        visits={visitsList}
-        onCreateDosification={openDosificationForm}
-        onScheduleVisit={(client) => {
-          toast.info(`Función de programar visita para ${client.name} - Próximamente`)
-          // TODO: Implementar formulario de visitas
-        }}
-      />
+      {dosificationClient && (
+        <DosificationForm
+          open={dosificationFormOpen}
+          onOpenChange={(open) => {
+            setDosificationFormOpen(open)
+            if (!open) setDosificationClient(null)
+          }}
+          onSubmit={handleCreateDosification}
+          client={dosificationClient}
+          products={productsList}
+        />
+      )}
+
+      {visitClient && (
+        <VisitForm
+          open={visitFormOpen}
+          onOpenChange={(open) => {
+            setVisitFormOpen(open)
+            if (!open) setVisitClient(null)
+          }}
+          onSubmit={handleScheduleVisit}
+          client={visitClient}
+        />
+      )}
+
+      {selectedClient && (
+        <ClientDetail
+          client={selectedClient}
+          open={clientDetailOpen}
+          onOpenChange={setClientDetailOpen}
+          onEdit={handleEditClient}
+          onUpdatePhotos={handleUpdatePhotos}
+          dosifications={dosificationsList}
+          visits={visitsList}
+          onCreateDosification={openDosificationForm}
+          onScheduleVisit={(client) => {
+            setVisitClient(client)
+            setVisitFormOpen(true)
+          }}
+        />
+      )}
 
       {dosificationClient && (
         <DosificationForm

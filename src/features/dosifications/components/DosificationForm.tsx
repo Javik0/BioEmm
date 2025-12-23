@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Client, Dosification, DosificationProduct, Product } from '@/types'
-import { Plus, Trash, WarningCircle, CheckCircle } from '@phosphor-icons/react'
+import { Plus, Trash, WarningCircle, CheckCircle, BookOpen } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useDosificationProtocols } from '../hooks/useDosificationProtocols'
 
 interface DosificationFormProps {
   open: boolean
@@ -23,12 +24,54 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
   const [hectares, setHectares] = useState(client?.hectares.toString() || '')
   const [products, setProducts] = useState<DosificationProduct[]>([])
   const [notes, setNotes] = useState('')
+  
+  const { protocols, loading: loadingProtocols } = useDosificationProtocols()
+  const [selectedProtocolId, setSelectedProtocolId] = useState<string>('')
+  const [selectedStageName, setSelectedStageName] = useState<string>('')
 
   useEffect(() => {
     if (client) {
       setHectares(client.hectares.toString())
     }
   }, [client])
+
+  const handleLoadStage = (protocolId: string, stageName: string) => {
+    const protocol = protocols.find(p => p.id === protocolId)
+    if (!protocol) return
+  
+    const stage = protocol.stages.find(s => s.name === stageName)
+    if (!stage) return
+  
+    const hectaresNum = parseFloat(hectares) || 0
+    if (hectaresNum <= 0) {
+      toast.error('Ingresa las hectáreas antes de cargar la receta para calcular las cantidades')
+      return
+    }
+  
+    const newProducts: DosificationProduct[] = stage.products.map(pp => {
+      // Try to find product in inventory
+      const inventoryProduct = inventoryProducts.find(ip => 
+        ip.name.toLowerCase().trim() === pp.name.toLowerCase().trim() ||
+        (ip.code && pp.code && ip.code === pp.code)
+      )
+  
+      return {
+        productId: inventoryProduct?.id || '', 
+        productName: pp.name, // Keep original name if not found
+        quantity: Number((pp.quantity * hectaresNum).toFixed(2)),
+        unit: pp.unit || 'kg'
+      }
+    })
+  
+    setProducts(newProducts)
+    
+    const missingProducts = newProducts.filter(p => !p.productId).length
+    if (missingProducts > 0) {
+      toast.warning(`Receta cargada, pero ${missingProducts} productos no se encontraron en el inventario.`)
+    } else {
+      toast.success(`Receta cargada: ${stage.name}`)
+    }
+  }
 
   const addProduct = () => {
     setProducts([
@@ -148,6 +191,61 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg border">
+            <div className="col-span-1 md:col-span-2 flex items-center gap-2 mb-2">
+              <BookOpen className="text-primary" size={20} />
+              <h3 className="font-semibold text-sm">Cargar Protocolo (Receta)</h3>
+            </div>
+            
+            <div>
+              <Label className="text-xs">Protocolo</Label>
+              <Select
+                value={selectedProtocolId}
+                onValueChange={(val) => {
+                  setSelectedProtocolId(val)
+                  setSelectedStageName('')
+                }}
+                disabled={loadingProtocols}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un protocolo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {protocols.map((p) => (
+                    <SelectItem key={p.id} value={p.id || ''}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs">Etapa / Semana</Label>
+              <Select
+                value={selectedStageName}
+                onValueChange={(val) => {
+                  setSelectedStageName(val)
+                  handleLoadStage(selectedProtocolId, val)
+                }}
+                disabled={!selectedProtocolId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una etapa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectedProtocolId && protocols
+                    .find(p => p.id === selectedProtocolId)
+                    ?.stages.map((stage, idx) => (
+                      <SelectItem key={idx} value={stage.name}>
+                        {stage.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="hectares">Hectáreas a Aplicar</Label>
             <Input

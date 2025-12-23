@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,7 +38,8 @@ import {
   Image as ImageIcon,
   UploadSimple,
   CaretUpDown,
-  Check
+  Check,
+  Warning
 } from '@phosphor-icons/react'
 import { LocationPicker } from '@/components/LocationPicker'
 import { toast } from 'sonner'
@@ -67,6 +78,8 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [agricultureType, setAgricultureType] = useState<AgricultureType | undefined>(undefined)
   const [applicationMode, setApplicationMode] = useState<ApplicationMode | undefined>(undefined)
   const [cropCategory, setCropCategory] = useState<CropCategory | undefined>(undefined)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [photoToDelete, setPhotoToDelete] = useState<ClientPhoto | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -240,10 +253,18 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
 
   const handleDeletePhoto = (photoId: string) => {
     const photo = photos.find(p => p.id === photoId)
-    if (photo && confirm(`¿Eliminar foto "${photo.fileName}"?`)) {
-      setPhotos((current) => current.filter(p => p.id !== photoId))
-      toast.success('Foto eliminada')
+    if (photo) {
+      setPhotoToDelete(photo)
+      setDeleteDialogOpen(true)
     }
+  }
+
+  const confirmDeletePhoto = () => {
+    if (!photoToDelete) return
+    setPhotos((current) => current.filter(p => p.id !== photoToDelete.id))
+    toast.success('Foto eliminada')
+    setDeleteDialogOpen(false)
+    setPhotoToDelete(null)
   }
 
   return (
@@ -869,6 +890,27 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
           }}
           initialLocation={location}
         />
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                <Warning size={24} weight="fill" />
+                ¿Eliminar foto?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Estás a punto de eliminar la foto <strong>{photoToDelete?.fileName}</strong>.
+                Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setPhotoToDelete(null)}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeletePhoto} className="bg-red-600 hover:bg-red-700">
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   )

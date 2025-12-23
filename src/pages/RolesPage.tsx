@@ -29,6 +29,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -102,6 +112,8 @@ export default function RolesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showDialog, setShowDialog] = useState(false)
   const [editingRole, setEditingRole] = useState<Role | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -138,10 +150,16 @@ export default function RolesPage() {
       toast.error('No se pueden eliminar roles del sistema')
       return
     }
-    if (window.confirm(`¿Eliminar el rol "${role.name}"?`)) {
-      setRoles(roles.filter(r => r.id !== role.id))
-      toast.success('Rol eliminado correctamente')
-    }
+    setRoleToDelete(role)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (!roleToDelete) return
+    setRoles(roles.filter(r => r.id !== roleToDelete.id))
+    toast.success('Rol eliminado correctamente')
+    setDeleteDialogOpen(false)
+    setRoleToDelete(null)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -377,6 +395,27 @@ export default function RolesPage() {
                 Cancelar
               </Button>
               <Button type="submit">
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash size={24} weight="fill" />
+              ¿Eliminar rol?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Estás a punto de eliminar el rol <strong>{roleToDelete?.name}</strong>.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRoleToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
                 {editingRole ? 'Guardar Cambios' : 'Crear Rol'}
               </Button>
             </DialogFooter>

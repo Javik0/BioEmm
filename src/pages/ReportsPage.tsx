@@ -1,13 +1,13 @@
-import { useKV } from '@github/spark/hooks'
 import { StockMovement } from '@/types'
 import { useClients } from '@/features/clients'
 import { useProducts } from '@/features/products'
+import { useStockMovements } from '@/features/inventory'
 import { ConsumptionReports } from '@/features/reports'
 
 export default function ReportsPage() {
   const { clients } = useClients()
   const { products } = useProducts()
-  const [stockMovements] = useKV<StockMovement[]>('bioemm-stock-movements', [])
+  const { stockMovements } = useStockMovements()
 
   const stockMovementsList = stockMovements || []
   const productsList = products || []

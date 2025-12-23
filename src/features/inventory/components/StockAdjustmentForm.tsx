@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowUp, ArrowDown, ArrowsClockwise } from '@phosphor-icons/react'
 
+import { toast } from 'sonner'
+
 interface StockAdjustmentFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -36,9 +38,8 @@ export function StockAdjustmentForm({ open, onOpenChange, product, type, onSubmi
     
     const adjustedQuantity = type === 'exit' ? -Math.abs(quantity) : Math.abs(quantity)
     const newStock = product.currentStock + adjustedQuantity
-
     if (newStock < 0) {
-      alert('El stock no puede ser negativo')
+      toast.error('El stock no puede ser negativo')
       return
     }
 

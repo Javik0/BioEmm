@@ -1,0 +1,2080 @@
+{
+  "protocols": [
+    {
+      "name": "Ensayo 1 - Plan Maestro",
+      "type": "Standard",
+      "stages": [
+        {
+          "name": "0 T",
+          "products": [
+            {
+              "code": "SER-PLANTAS112",
+              "name": "PLANTA BROCOLI STEEL ST",
+              "quantity": 58.0,
+              "unit": "un",
+              "price": 0.014
+            },
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 11.5
+            },
+            {
+              "code": "AGR2207",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "0 H",
+          "products": [
+            {
+              "code": "AGR2584",
+              "name": "DUAL GOLD",
+              "quantity": 1.5,
+              "unit": "cc",
+              "price": 0.034914
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "g",
+              "price": 15.0
+            },
+            {
+              "code": "AGR5000",
+              "name": "CYPERPAC",
+              "quantity": 600.0,
+              "unit": "cc",
+              "price": 0.007075
+            },
+            {
+              "code": "AGR2208",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "l",
+              "price": 18.97
+            },
+            {
+              "code": "AGR2006",
+              "name": "ACIDO CITRICO ANHIDRIDO",
+              "quantity": 100.0,
+              "unit": "g",
+              "price": 0.001009
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            }
+          ]
+        },
+        {
+          "name": "0 CB 1",
+          "products": [
+            {
+              "code": "FER1272",
+              "name": "CALCIMEND",
+              "quantity": 50.0,
+              "unit": "kg",
+              "price": 0.397198
+            },
+            {
+              "code": "FER1236",
+              "name": "ESTA KIESERITE",
+              "quantity": 6.0,
+              "unit": "kg",
+              "price": 0.449729
+            },
+            {
+              "code": "FER1111",
+              "name": "BROCOLI I N 14%, P2O5 40%, K2O 0%, CaO 3%, 2%MgO",
+              "quantity": 110.0,
+              "unit": "kg",
+              "price": 0.966203
+            },
+            {
+              "code": "FER1026",
+              "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+              "quantity": 40.0,
+              "unit": "kg",
+              "price": 0.987286
+            }
+          ]
+        },
+        {
+          "name": "2 d 1",
+          "products": [
+            {
+              "code": "AGR2593",
+              "name": "NINJA",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.029127
+            },
+            {
+              "code": "AGR7080",
+              "name": "TRICHOBION PLUS",
+              "quantity": 5.0,
+              "unit": "L",
+              "price": 5.96
+            },
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 2.0,
+              "unit": "L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.5,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "ÁCIDO BÓRICO",
+              "quantity": 0.0,
+              "unit": "Kg",
+              "price": 0.0
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            }
+          ]
+        },
+        {
+          "name": "4 FS 1",
+          "products": [
+            {
+              "code": "AGR5000",
+              "name": "CYPERPAC",
+              "quantity": 600.0,
+              "unit": "cc",
+              "price": 0.007075
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.97
+            },
+            {
+              "code": "AGR5028",
+              "name": "METALOSATO DE BORO",
+              "quantity": 500.0,
+              "unit": "cc",
+              "price": 0.018569
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "5 FE 2",
+          "products": [
+            {
+              "code": "FER1097",
+              "name": "SULFATO DE ZINC 35%Zn, 17%S",
+              "quantity": 4.0,
+              "unit": "kg",
+              "price": 1.27
+            },
+            {
+              "code": "FER1236",
+              "name": "ESTA KIESERITE",
+              "quantity": 6.0,
+              "unit": "kg",
+              "price": 0.449729
+            },
+            {
+              "code": "FER1027",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 100.0,
+              "unit": "kg",
+              "price": 0.429204
+            },
+            {
+              "code": "FER1111",
+              "name": "BROCOLI I N 14%, P2O5 40%, K2O 0%, CaO 3%, 2%MgO",
+              "quantity": 40.0,
+              "unit": "kg",
+              "price": 0.966203
+            },
+            {
+              "code": "FER1118",
+              "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+              "quantity": 70.0,
+              "unit": "kg",
+              "price": 0.768311
+            },
+            {
+              "code": "FER1023",
+              "name": "MURIATO DE POTASIO 60% K2O",
+              "quantity": 25.0,
+              "unit": "kg",
+              "price": 0.414273
+            },
+            {
+              "code": "FER1277",
+              "name": "SULFATO DE POTASIO  50% K2O, 17%S",
+              "quantity": 40.0,
+              "unit": "kg",
+              "price": 0.864014
+            }
+          ]
+        },
+        {
+          "name": "5 FS 2",
+          "products": [
+            {
+              "code": "AGR7080",
+              "name": "V.TRICHOBION PLUS",
+              "quantity": 5.0,
+              "unit": "L",
+              "price": 5.96
+            },
+            {
+              "code": "AGR2207",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "6 FS 3",
+          "products": [
+            {
+              "code": "AGR5286",
+              "name": "ACETALAQ",
+              "quantity": 400.0,
+              "unit": "g",
+              "price": 0.03925
+            },
+            {
+              "code": "AGR6921",
+              "name": "MAGMA DUPLO",
+              "quantity": 0.0,
+              "unit": "g",
+              "price": 0.01638
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "8 FE 3",
+          "products": [
+            {
+              "code": "FER1097",
+              "name": "SULFATO DE ZINC 35%Zn, 17%S",
+              "quantity": 4.0,
+              "unit": "kg",
+              "price": 1.27
+            },
+            {
+              "code": "FER1027",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 120.0,
+              "unit": "kg",
+              "price": 0.429204
+            },
+            {
+              "code": "FER1118",
+              "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+              "quantity": 40.0,
+              "unit": "kg",
+              "price": 0.768311
+            },
+            {
+              "code": "FER1026",
+              "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+              "quantity": 80.0,
+              "unit": "kg",
+              "price": 0.987286
+            },
+            {
+              "code": "FER1277",
+              "name": "SULFATO DE POTASIO  50% K2O, 17%S",
+              "quantity": 100.0,
+              "unit": "kg",
+              "price": 0.864014
+            }
+          ]
+        },
+        {
+          "name": "8 FS 4",
+          "products": [
+            {
+              "code": "AGR4929",
+              "name": "INTREPID",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.055443
+            },
+            {
+              "code": "AGR5275",
+              "name": "IMIDALAQ",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.024821
+            },
+            {
+              "code": "AGR6948",
+              "name": "COSACO",
+              "quantity": 300.0,
+              "unit": "cc",
+              "price": 0.0714
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER CALIX",
+              "quantity": 1.5,
+              "unit": "L",
+              "price": 18.17
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "9 FE 4",
+          "products": [
+            {
+              "code": "FER1118",
+              "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+              "quantity": 30.0,
+              "unit": "kg",
+              "price": 0.768311
+            },
+            {
+              "code": "FER1027",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 40.0,
+              "unit": "kg",
+              "price": 0.429204
+            },
+            {
+              "code": "FER1026",
+              "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+              "quantity": 180.0,
+              "unit": "kg",
+              "price": 0.987286
+            }
+          ]
+        },
+        {
+          "name": "9 FS 5",
+          "products": [
+            {
+              "code": "AGR5444",
+              "name": "FIDELITY",
+              "quantity": 100.0,
+              "unit": "cc",
+              "price": 0.113652
+            },
+            {
+              "code": "AGR5441",
+              "name": "AMPLIGO",
+              "quantity": 200.0,
+              "unit": "cc",
+              "price": 0.123683
+            },
+            {
+              "code": "AGR5028",
+              "name": "METALOSATO DE BORO",
+              "quantity": 500.0,
+              "unit": "cc",
+              "price": 0.018569
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.1675
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "10 FS 6",
+          "products": [
+            {
+              "code": "AGR2176",
+              "name": "TRACER",
+              "quantity": 150.0,
+              "unit": "cc",
+              "price": 0.323796
+            },
+            {
+              "code": "AGR2593",
+              "name": "NINJA",
+              "quantity": 250.0,
+              "unit": "cc",
+              "price": 0.029127
+            },
+            {
+              "code": "AGR5373",
+              "name": "TUNIC",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.041162
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 32.123000000000005
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 16.445
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.7
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 33.25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Protocolo BioEMS Ensayo 1",
+      "type": "BioEMS",
+      "stages": [
+        {
+          "name": "Semana 0 - Inmersión",
+          "products": [
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.1,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 0 - Herbicida",
+          "products": [
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.1,
+              "unit": "Kg/L",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 18.97
+            }
+          ]
+        },
+        {
+          "name": "Semana 2 - Drench",
+          "products": [
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 4 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.1,
+              "unit": "Kg/L",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 18.97
+            }
+          ]
+        },
+        {
+          "name": "Semana 5 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.1,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 6 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.1,
+              "unit": "Kg/L",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER CALIX",
+              "quantity": 0.75,
+              "unit": "Kg/L",
+              "price": 18.17
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 18.1675
+            }
+          ]
+        },
+        {
+          "name": "Semana 10 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.123000000000005
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 16.45
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 18.7
+            }
+          ]
+        },
+        {
+          "name": "Semana 12 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.25,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 33.25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Protocolo BioEMS Ensayo 2",
+      "type": "BioEMS",
+      "stages": [
+        {
+          "name": "Semana 1 - Abono Base",
+          "products": [
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 40.0,
+              "unit": "kg",
+              "price": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 4 - Abono",
+          "products": [
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 32.0,
+              "unit": "Kg/L",
+              "price": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 8 - Abono",
+          "products": [
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 8.0,
+              "unit": "Kg/L",
+              "price": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ensayo 3 - Plan Maestro",
+      "type": "Standard",
+      "stages": [
+        {
+          "name": "0 T",
+          "products": [
+            {
+              "code": "SER-PLANTAS112",
+              "name": "PLANTA BROCOLI STEEL ST",
+              "quantity": 58.0,
+              "unit": "un",
+              "price": 0.014
+            },
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "0 H",
+          "products": [
+            {
+              "code": "AGR2584",
+              "name": "DUAL GOLD",
+              "quantity": 1.5,
+              "unit": "cc",
+              "price": 0.034914
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "g",
+              "price": 15.0
+            },
+            {
+              "code": "AGR5000",
+              "name": "CYPERPAC",
+              "quantity": 600.0,
+              "unit": "cc",
+              "price": 0.007075
+            },
+            {
+              "code": "AGR2208",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "l",
+              "price": 18.97
+            },
+            {
+              "code": "AGR2006",
+              "name": "ACIDO CITRICO ANHIDRIDO",
+              "quantity": 100.0,
+              "unit": "g",
+              "price": 0.001009
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            }
+          ]
+        },
+        {
+          "name": "0 CB 1",
+          "products": [
+            {
+              "code": "FER1111",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 152.23880597014926,
+              "unit": "kg",
+              "price": 0.966203
+            },
+            {
+              "code": "",
+              "name": "HUMIPLEX",
+              "quantity": 12.4,
+              "unit": "Kg",
+              "price": 3.0
+            },
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 80.0,
+              "unit": "kg",
+              "price": 1.0
+            },
+            {
+              "code": "FER1026",
+              "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+              "quantity": 0.0,
+              "unit": "",
+              "price": 0.0
+            }
+          ]
+        },
+        {
+          "name": "2 d 1",
+          "products": [
+            {
+              "code": "AGR2593",
+              "name": "NINJA",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.029127
+            },
+            {
+              "code": "AGR7080",
+              "name": "TRICHOBION PLUS",
+              "quantity": 5.0,
+              "unit": "L",
+              "price": 5962143.0
+            },
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 2.0,
+              "unit": "L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.5,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "ÁCIDO BÓRICO",
+              "quantity": 0.0,
+              "unit": "Kg",
+              "price": 0.0
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            }
+          ]
+        },
+        {
+          "name": "4 FS 1",
+          "products": [
+            {
+              "code": "AGR5000",
+              "name": "CYPERPAC",
+              "quantity": 600.0,
+              "unit": "cc",
+              "price": 0.007075
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.97
+            },
+            {
+              "code": "AGR5028",
+              "name": "METALOSATO DE BORO",
+              "quantity": 500.0,
+              "unit": "cc",
+              "price": 0.018569
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "5 FE 2",
+          "products": [
+            {
+              "code": "FER1097",
+              "name": "SULFATO DE ZINC 35%Zn, 17%S",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 1271454.0
+            },
+            {
+              "code": "FER1027",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 229.8507462686567,
+              "unit": "kg",
+              "price": 0.429204
+            },
+            {
+              "code": "FER1111",
+              "name": "BROCOLI I N 14%, P2O5 40%, K2O 0%, CaO 3%, 2%MgO",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.966203
+            },
+            {
+              "code": "FER1118",
+              "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.768311
+            },
+            {
+              "code": "FER1023",
+              "name": "MURIATO DE POTASIO 60% K2O",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.414273
+            },
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 64.0,
+              "unit": "kg",
+              "price": 1.0
+            },
+            {
+              "code": "",
+              "name": "HUMIPLEX",
+              "quantity": 31.0,
+              "unit": "Kg",
+              "price": 3.0
+            },
+            {
+              "code": "FER1277",
+              "name": "SULFATO DE POTASIO  50% K2O, 17%S",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.864014
+            }
+          ]
+        },
+        {
+          "name": "5 FS 2",
+          "products": [
+            {
+              "code": "AGR7080",
+              "name": "V.TRICHOBION PLUS",
+              "quantity": 5.0,
+              "unit": "L",
+              "price": 5962143.0
+            },
+            {
+              "code": "AGR2207",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "6 FS 3",
+          "products": [
+            {
+              "code": "AGR5286",
+              "name": "ACETALAQ",
+              "quantity": 400.0,
+              "unit": "g",
+              "price": 0.03925
+            },
+            {
+              "code": "AGR6921",
+              "name": "MAGMA DUPLO",
+              "quantity": 0.0,
+              "unit": "g",
+              "price": 0.01638
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg",
+              "price": 15.0
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "8 FE 3",
+          "products": [
+            {
+              "code": "FER1097",
+              "name": "SULFATO DE ZINC 35%Zn, 17%S",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 1271454.0
+            },
+            {
+              "code": "FER1027",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 128.3582089552239,
+              "unit": "kg",
+              "price": 0.429204
+            },
+            {
+              "code": "FER1118",
+              "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.768311
+            },
+            {
+              "code": "FER1026",
+              "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.987286
+            },
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 16.0,
+              "unit": "kg",
+              "price": 1.0
+            },
+            {
+              "code": "",
+              "name": "HUMIPLEX",
+              "quantity": 18.599999999999998,
+              "unit": "kg",
+              "price": 3.0
+            },
+            {
+              "code": "FER1277",
+              "name": "SULFATO DE POTASIO  50% K2O, 17%S",
+              "quantity": 100.0,
+              "unit": "kg",
+              "price": 0.864014
+            }
+          ]
+        },
+        {
+          "name": "8 FS 4",
+          "products": [
+            {
+              "code": "AGR4929",
+              "name": "INTREPID",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.055443
+            },
+            {
+              "code": "AGR5275",
+              "name": "IMIDALAQ",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.024821
+            },
+            {
+              "code": "AGR6948",
+              "name": "COSACO",
+              "quantity": 300.0,
+              "unit": "cc",
+              "price": 0.0714
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER CALIX",
+              "quantity": 1.5,
+              "unit": "L",
+              "price": 18.17
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "9 FE 4",
+          "products": [
+            {
+              "code": "FER1118",
+              "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.768311
+            },
+            {
+              "code": "FER1027",
+              "name": "NITRATO DE AMONIO 33.5%N",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.429204
+            },
+            {
+              "code": "FER1026",
+              "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+              "quantity": 0.0,
+              "unit": "kg",
+              "price": 0.987286
+            }
+          ]
+        },
+        {
+          "name": "9 FS 5",
+          "products": [
+            {
+              "code": "AGR5444",
+              "name": "FIDELITY",
+              "quantity": 100.0,
+              "unit": "cc",
+              "price": 0.113652
+            },
+            {
+              "code": "AGR5441",
+              "name": "AMPLIGO",
+              "quantity": 200.0,
+              "unit": "cc",
+              "price": 0.123683
+            },
+            {
+              "code": "AGR5028",
+              "name": "METALOSATO DE BORO",
+              "quantity": 500.0,
+              "unit": "cc",
+              "price": 0.018569
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.1675
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "AGR4956",
+              "name": "ARPON",
+              "quantity": 180.0,
+              "unit": "cc",
+              "price": 0.022056
+            }
+          ]
+        },
+        {
+          "name": "10 FS 6",
+          "products": [
+            {
+              "code": "AGR2176",
+              "name": "TRACER",
+              "quantity": 150.0,
+              "unit": "cc",
+              "price": 0.323796
+            },
+            {
+              "code": "AGR2593",
+              "name": "NINJA",
+              "quantity": 250.0,
+              "unit": "cc",
+              "price": 0.029127
+            },
+            {
+              "code": "AGR5373",
+              "name": "TUNIC",
+              "quantity": 400.0,
+              "unit": "cc",
+              "price": 0.041162
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 32.123000000000005
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 16.445
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 18.7
+            },
+            {
+              "code": "AGR5353",
+              "name": "CONFORT",
+              "quantity": 1.0,
+              "unit": "g",
+              "price": 0.008096
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "L",
+              "price": 33.25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Protocolo BioEMS Ensayo 3",
+      "type": "BioEMS",
+      "stages": [
+        {
+          "name": "Semana 0 - Inmersión",
+          "products": [
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 0 - Herbicida",
+          "products": [
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg/L",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.97
+            }
+          ]
+        },
+        {
+          "name": "Semana 0 - Abono Base",
+          "products": [
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 80.0,
+              "unit": "Kg/L",
+              "price": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 2 - Drench",
+          "products": [
+            {
+              "code": "",
+              "name": "ELICITECH PENTAGRAM",
+              "quantity": 2.0,
+              "unit": "Kg/L",
+              "price": 11.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 4 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg/L",
+              "price": 15.0
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.97
+            }
+          ]
+        },
+        {
+          "name": "Semana 5 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 5 - Abono",
+          "products": [
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 64.0,
+              "unit": "Kg/L",
+              "price": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 6 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 33.25
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "DEXTROSA",
+              "quantity": 0.2,
+              "unit": "Kg/L",
+              "price": 15.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 8 - Abono",
+          "products": [
+            {
+              "code": "",
+              "name": "FERTIROOT",
+              "quantity": 16.0,
+              "unit": "Kg/L",
+              "price": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Semana 8 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER CALIX",
+              "quantity": 1.5,
+              "unit": "Kg/L",
+              "price": 18.17
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.1675
+            }
+          ]
+        },
+        {
+          "name": "Semana 10 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 32.123000000000005
+            },
+            {
+              "code": "",
+              "name": "KALITER KALIUM",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.97
+            },
+            {
+              "code": "",
+              "name": "KALITER GB30",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 18.7
+            }
+          ]
+        },
+        {
+          "name": "Semana 12 - Foliar",
+          "products": [
+            {
+              "code": "",
+              "name": "NANOCROP Cu",
+              "quantity": 0.5,
+              "unit": "Kg/L",
+              "price": 32.5
+            },
+            {
+              "code": "",
+              "name": "NANOCROP Ca",
+              "quantity": 1.0,
+              "unit": "Kg/L",
+              "price": 33.25
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "code": "SER-PLANTAS112",
+      "name": "PLANTA BROCOLI STEEL ST",
+      "quantity": 58.0,
+      "unit": "un",
+      "price": 0.014
+    },
+    {
+      "code": "",
+      "name": "ELICITECH PENTAGRAM",
+      "quantity": 1.0,
+      "unit": "L",
+      "price": 11.5
+    },
+    {
+      "code": "AGR2207",
+      "name": "DEXTROSA",
+      "quantity": 0.2,
+      "unit": "Kg",
+      "price": 15.0
+    },
+    {
+      "code": "AGR2584",
+      "name": "DUAL GOLD",
+      "quantity": 1.5,
+      "unit": "cc",
+      "price": 0.034914
+    },
+    {
+      "code": "AGR5000",
+      "name": "CYPERPAC",
+      "quantity": 600.0,
+      "unit": "cc",
+      "price": 0.007075
+    },
+    {
+      "code": "AGR2208",
+      "name": "NANOCROP Cu",
+      "quantity": 0.5,
+      "unit": "L",
+      "price": 32.5
+    },
+    {
+      "code": "",
+      "name": "KALITER KALIUM",
+      "quantity": 1.0,
+      "unit": "l",
+      "price": 18.97
+    },
+    {
+      "code": "AGR2006",
+      "name": "ACIDO CITRICO ANHIDRIDO",
+      "quantity": 100.0,
+      "unit": "g",
+      "price": 0.001009
+    },
+    {
+      "code": "AGR5353",
+      "name": "CONFORT",
+      "quantity": 1.0,
+      "unit": "g",
+      "price": 0.008096
+    },
+    {
+      "code": "FER1272",
+      "name": "CALCIMEND",
+      "quantity": 50.0,
+      "unit": "kg",
+      "price": 0.397198
+    },
+    {
+      "code": "FER1236",
+      "name": "ESTA KIESERITE",
+      "quantity": 6.0,
+      "unit": "kg",
+      "price": 0.449729
+    },
+    {
+      "code": "FER1111",
+      "name": "BROCOLI I N 14%, P2O5 40%, K2O 0%, CaO 3%, 2%MgO",
+      "quantity": 110.0,
+      "unit": "kg",
+      "price": 0.966203
+    },
+    {
+      "code": "FER1026",
+      "name": "NITRATO DE POTASIO 13.5%N, 46%K2O",
+      "quantity": 40.0,
+      "unit": "kg",
+      "price": 0.987286
+    },
+    {
+      "code": "AGR2593",
+      "name": "NINJA",
+      "quantity": 400.0,
+      "unit": "cc",
+      "price": 0.029127
+    },
+    {
+      "code": "AGR7080",
+      "name": "TRICHOBION PLUS",
+      "quantity": 5.0,
+      "unit": "L",
+      "price": 5.96
+    },
+    {
+      "code": "",
+      "name": "ÁCIDO BÓRICO",
+      "quantity": 0.0,
+      "unit": "Kg",
+      "price": 0.0
+    },
+    {
+      "code": "",
+      "name": "NANOCROP Ca",
+      "quantity": 1.0,
+      "unit": "L",
+      "price": 33.25
+    },
+    {
+      "code": "AGR5028",
+      "name": "METALOSATO DE BORO",
+      "quantity": 500.0,
+      "unit": "cc",
+      "price": 0.018569
+    },
+    {
+      "code": "AGR4956",
+      "name": "ARPON",
+      "quantity": 180.0,
+      "unit": "cc",
+      "price": 0.022056
+    },
+    {
+      "code": "FER1097",
+      "name": "SULFATO DE ZINC 35%Zn, 17%S",
+      "quantity": 4.0,
+      "unit": "kg",
+      "price": 1.27
+    },
+    {
+      "code": "FER1027",
+      "name": "NITRATO DE AMONIO 33.5%N",
+      "quantity": 100.0,
+      "unit": "kg",
+      "price": 0.429204
+    },
+    {
+      "code": "FER1118",
+      "name": "YARA NITRABOR  15%N, 26%CaO, 0.3%B",
+      "quantity": 70.0,
+      "unit": "kg",
+      "price": 0.768311
+    },
+    {
+      "code": "FER1023",
+      "name": "MURIATO DE POTASIO 60% K2O",
+      "quantity": 25.0,
+      "unit": "kg",
+      "price": 0.414273
+    },
+    {
+      "code": "FER1277",
+      "name": "SULFATO DE POTASIO  50% K2O, 17%S",
+      "quantity": 40.0,
+      "unit": "kg",
+      "price": 0.864014
+    },
+    {
+      "code": "AGR7080",
+      "name": "V.TRICHOBION PLUS",
+      "quantity": 5.0,
+      "unit": "L",
+      "price": 5.96
+    },
+    {
+      "code": "AGR5286",
+      "name": "ACETALAQ",
+      "quantity": 400.0,
+      "unit": "g",
+      "price": 0.03925
+    },
+    {
+      "code": "AGR6921",
+      "name": "MAGMA DUPLO",
+      "quantity": 0.0,
+      "unit": "g",
+      "price": 0.01638
+    },
+    {
+      "code": "AGR4929",
+      "name": "INTREPID",
+      "quantity": 400.0,
+      "unit": "cc",
+      "price": 0.055443
+    },
+    {
+      "code": "AGR5275",
+      "name": "IMIDALAQ",
+      "quantity": 400.0,
+      "unit": "cc",
+      "price": 0.024821
+    },
+    {
+      "code": "AGR6948",
+      "name": "COSACO",
+      "quantity": 300.0,
+      "unit": "cc",
+      "price": 0.0714
+    },
+    {
+      "code": "",
+      "name": "KALITER CALIX",
+      "quantity": 1.5,
+      "unit": "L",
+      "price": 18.17
+    },
+    {
+      "code": "AGR5444",
+      "name": "FIDELITY",
+      "quantity": 100.0,
+      "unit": "cc",
+      "price": 0.113652
+    },
+    {
+      "code": "AGR5441",
+      "name": "AMPLIGO",
+      "quantity": 200.0,
+      "unit": "cc",
+      "price": 0.123683
+    },
+    {
+      "code": "",
+      "name": "KALITER GB30",
+      "quantity": 1.0,
+      "unit": "L",
+      "price": 18.1675
+    },
+    {
+      "code": "AGR2176",
+      "name": "TRACER",
+      "quantity": 150.0,
+      "unit": "cc",
+      "price": 0.323796
+    },
+    {
+      "code": "AGR5373",
+      "name": "TUNIC",
+      "quantity": 400.0,
+      "unit": "cc",
+      "price": 0.041162
+    },
+    {
+      "code": "",
+      "name": "FERTIROOT",
+      "quantity": 40.0,
+      "unit": "kg",
+      "price": 1.0
+    },
+    {
+      "code": "",
+      "name": "HUMIPLEX",
+      "quantity": 12.4,
+      "unit": "Kg",
+      "price": 3.0
+    }
+  ]
+}

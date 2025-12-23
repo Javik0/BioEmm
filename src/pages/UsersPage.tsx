@@ -33,6 +33,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -80,6 +90,8 @@ export default function UsersPage() {
       lastLogin: new Date().toISOString()
     }
   ])
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<UserStatus | 'Todos'>('Todos')
   const [showDialog, setShowDialog] = useState(false)
@@ -128,11 +140,18 @@ export default function UsersPage() {
   }
 
   const handleDelete = (user: User) => {
-    if (window.confirm(`¿Eliminar al usuario "${user.displayName}"?`)) {
-      setUsers(users.filter(u => u.id !== user.id))
-      toast.success('Usuario eliminado correctamente')
-    }
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
   }
+
+  const confirmDelete = () => {
+    if (!userToDelete) return
+    setUsers(users.filter(u => u.id !== userToDelete.id))
+    toast.success('Usuario eliminado correctamente')
+    setDeleteDialogOpen(false)
+    setUserToDelete(null)
+  }
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -458,6 +477,27 @@ export default function UsersPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash size={24} weight="fill" />
+              ¿Eliminar usuario?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Estás a punto de eliminar al usuario <strong>{userToDelete?.displayName}</strong>.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
                   <SelectItem value="Activo">Activo</SelectItem>
                   <SelectItem value="Inactivo">Inactivo</SelectItem>
                   <SelectItem value="Suspendido">Suspendido</SelectItem>

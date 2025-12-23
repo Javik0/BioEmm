@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Dosification } from '@/types'
 import { AuthGate } from '@/components/AuthGate'
 import { useClients } from '@/features/clients'
 import { useProducts } from '@/features/products'
+import { useDosifications } from '@/features/dosifications'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,7 +24,7 @@ import logoImage from '@/assets/branding/BioEmm.jpg'
 function App() {
   const { clients: clientsList } = useClients()
   const { products: productsList } = useProducts()
-  const [dosifications] = useKV<Dosification[]>('bioemm-dosifications', [])
+  const { dosifications } = useDosifications()
   const [activeTab, setActiveTab] = useState('clients')
 
   const dosificationsList = dosifications || []
