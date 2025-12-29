@@ -62,6 +62,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined)
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined)
+  const [includeInactive, setIncludeInactive] = useState(false)
 
   const { startDate, endDate } = useMemo(() => {
     const now = new Date()
@@ -101,6 +102,12 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
           const client = clients.find(c => c.name === clientName)
           if (client?.id !== selectedClient) return false
         }
+
+        // Si no incluimos inactivos, excluir movimientos de clientes inactivos
+        if (!includeInactive && clientName) {
+          const client = clients.find(c => c.name === clientName)
+          if (client?.status === 'Inactivo') return false
+        }
       }
 
       if (selectedCategory !== 'all') {
@@ -110,7 +117,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
 
       return true
     })
-  }, [stockMovements, period, startDate, endDate, selectedClient, selectedCategory, clients, products])
+  }, [stockMovements, period, startDate, endDate, selectedClient, selectedCategory, clients, products, includeInactive])
 
   const consumptionByClient = useMemo((): ConsumptionByClient[] => {
     const clientMap = new Map<string, ConsumptionByClient>()
@@ -123,6 +130,9 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
 
       const client = clients.find(c => c.name === clientName)
       if (!client) return
+
+      // Excluir clientes inactivos del agregado si no se ha marcado incluir
+      if (!includeInactive && client.status === 'Inactivo') return
 
       const product = products.find(p => p.id === movement.productId)
       const value = (product?.costPerUnit || 0) * movement.quantity
@@ -158,7 +168,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
     })
 
     return Array.from(clientMap.values()).sort((a, b) => b.totalValue - a.totalValue)
-  }, [filteredMovements, clients, products])
+  }, [filteredMovements, clients, products, includeInactive])
 
   const consumptionByProduct = useMemo((): ConsumptionByProduct[] => {
     const productMap = new Map<string, ConsumptionByProduct>()
@@ -349,6 +359,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
   }
 
   const categories = Array.from(new Set(products.map(p => p.category)))
+  const clientsForSelector = includeInactive ? clients : clients.filter(c => c.status !== 'Inactivo')
 
   return (
     <div className="space-y-6">
@@ -397,7 +408,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los Clientes</SelectItem>
-                  {clients.map(client => (
+                  {clientsForSelector.map(client => (
                     <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -418,6 +429,19 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              id="includeInactive"
+              type="checkbox"
+              className="accent-primary"
+              checked={includeInactive}
+              onChange={(e) => setIncludeInactive(e.target.checked)}
+            />
+            <label htmlFor="includeInactive" className="text-sm text-muted-foreground">
+              Incluir clientes inactivos en filtros y cálculos
+            </label>
           </div>
 
           {period === 'custom' && (

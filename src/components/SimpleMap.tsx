@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Globe, Stack, CaretDown, Funnel, X, MagnifyingGlass } from '@phosphor-icons/react'
+import { Globe, Stack, CaretDown, Funnel, X, MagnifyingGlass, Eye, EyeSlash } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -134,6 +135,41 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const [selectedCropTypes, setSelectedCropTypes] = useState<Set<CropType>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClientStatus>>(new Set())
   const [cropTypeSearch, setCropTypeSearch] = useState('')
+  const [showInactive, setShowInactive] = useState(false)
+
+const createInactiveIcon = () => {
+  const svgIcon = `
+    <svg width="40" height="56" viewBox="0 0 40 56" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="markerShadowInactive" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="0" dy="2" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.25"/>
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <g filter="url(#markerShadowInactive)">
+        <path d="M20 0C10.059 0 2 8.059 2 18c0 14 18 38 18 38s18-24 18-38c0-9.941-8.059-18-18-18z"
+              fill="#6b7280" stroke="white" stroke-width="2.5"/>
+        <circle cx="20" cy="18" r="7.5" fill="white"/>
+        <circle cx="20" cy="18" r="4" fill="#6b7280"/>
+        <line x1="12" y1="10" x2="28" y2="26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </svg>
+  `
+  return L.divIcon({
+    html: svgIcon,
+    className: 'custom-map-marker inactive-marker',
+    iconSize: [40, 56],
+    iconAnchor: [20, 56],
+    popupAnchor: [0, -56]
+  })
+}
 
   const statuses: ClientStatus[] = ['Activo', 'Inactivo', 'Prospecto']
 
@@ -174,7 +210,8 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const filteredClients = clients.filter((client) => {
     const cropTypeMatch = selectedCropTypes.size === 0 || selectedCropTypes.has(client.cropType)
     const statusMatch = selectedStatuses.size === 0 || selectedStatuses.has(client.status)
-    return cropTypeMatch && statusMatch
+    const inactiveOk = showInactive || client.status !== 'Inactivo'
+    return cropTypeMatch && statusMatch && inactiveOk
   })
 
   const hasActiveFilters = selectedCropTypes.size > 0 || selectedStatuses.size > 0
@@ -270,9 +307,10 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
         ? new Date(Math.max(...clientDosifications.map(d => new Date(d.date).getTime())))
         : null
 
+      const icon = client.status === 'Inactivo' ? createInactiveIcon() : createCustomIcon(getCropColor(client.cropType))
       const marker = L.marker(
         [client.location.lat, client.location.lng],
-        { icon: createCustomIcon(getCropColor(client.cropType)) }
+        { icon }
       )
 
       const statusBadge = client.status === 'Activo' 
@@ -403,6 +441,15 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
       <div ref={mapContainerRef} className="w-full h-full" />
       
       <div className="absolute top-4 right-4 z-[400] flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className={`bg-white hover:bg-gray-100 shadow-md border border-gray-300 text-gray-700 ${showInactive ? 'border-gray-500 text-gray-800' : ''}`}
+          onClick={() => setShowInactive((prev) => !prev)}
+        >
+          {showInactive ? <EyeSlash className="mr-2" size={18} /> : <Eye className="mr-2" size={18} />}
+          {showInactive ? 'Ocultar Inactivos' : 'Mostrar Inactivos'}
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -556,6 +603,12 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
           <div className="w-3 h-3 rounded-full" style={{ background: getCropColor('Tubérculos') }}></div>
           <span className="text-gray-600">Tubérculos</span>
         </div>
+        {showInactive && (
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ background: '#6b7280' }}></div>
+            <span className="text-gray-600">Inactivos</span>
+          </div>
+        )}
       </div>
 
       <div className="absolute top-4 left-4 bg-white/95 backdrop-blur px-4 py-2 rounded-lg text-sm font-semibold shadow-md z-[1000] border border-gray-200">
