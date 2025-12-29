@@ -56,6 +56,10 @@ export default function AgendaPage() {
   const [view, setView] = useState<'list' | 'calendar'>('list')
   const [monthOffset, setMonthOffset] = useState(0)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [notificationStatus, setNotificationStatus] = useState<'unsupported' | 'default' | 'granted' | 'denied'>(() => {
+    if (typeof Notification === 'undefined') return 'unsupported'
+    return Notification.permission as 'default' | 'granted' | 'denied'
+  })
   const reminderTimers = useRef<number[]>([])
 
   const visitsWithClient = useMemo(() => {
@@ -110,16 +114,8 @@ export default function AgendaPage() {
           const title = `Visita en ${minutes} min`
           const body = `${visit.clientName} • ${visit.type} • ${new Date(visitDate).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}`
 
-          if (Notification && Notification.permission === 'granted') {
+          if (notificationStatus === 'granted' && typeof Notification !== 'undefined') {
             new Notification(title, { body })
-          } else if (Notification && Notification.permission === 'default') {
-            Notification.requestPermission().then((perm) => {
-              if (perm === 'granted') {
-                new Notification(title, { body })
-              } else {
-                toast.info(body)
-              }
-            })
           } else {
             toast.info(body)
           }
@@ -133,7 +129,27 @@ export default function AgendaPage() {
       reminderTimers.current.forEach((t) => clearTimeout(t))
       reminderTimers.current = []
     }
-  }, [visitsWithClient])
+  }, [visitsWithClient, notificationStatus])
+
+  const requestNotificationPermission = async () => {
+    if (typeof Notification === 'undefined') {
+      setNotificationStatus('unsupported')
+      toast.info('Tu navegador no soporta notificaciones')
+      return
+    }
+    if (Notification.permission === 'granted') {
+      setNotificationStatus('granted')
+      toast.success('Notificaciones ya habilitadas')
+      return
+    }
+    const result = await Notification.requestPermission()
+    setNotificationStatus(result as any)
+    if (result === 'granted') {
+      toast.success('Notificaciones habilitadas para recordatorios')
+    } else if (result === 'denied') {
+      toast.info('No se habilitaron notificaciones; usaré avisos in-app')
+    }
+  }
 
   const handleStatusChange = async (visit: Visit, status: VisitStatus) => {
     await updateVisit({ ...visit, status, completedAt: status === 'Completada' ? new Date().toISOString() : visit.completedAt })
@@ -170,7 +186,16 @@ export default function AgendaPage() {
           </h2>
           <p className="text-sm text-muted-foreground">Pendientes por defecto; recordatorios a 60 y 15 min antes si el navegador lo permite.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Button
+            variant={notificationStatus === 'granted' ? 'outline' : 'default'}
+            size="sm"
+            onClick={requestNotificationPermission}
+            disabled={notificationStatus === 'unsupported'}
+          >
+            <BellRinging size={16} className="mr-1" />
+            {notificationStatus === 'granted' ? 'Notificaciones activas' : 'Habilitar recordatorios'}
+          </Button>
           <Button variant={view === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setView('list')}>
             <ListIcon size={16} className="mr-1" /> Lista
           </Button>
@@ -307,17 +332,24 @@ export default function AgendaPage() {
               const dayNum = idx + 1
               const count = countsByDay[dayKey]
               const isSelected = selectedDay === dayKey
+              const hasVisits = count > 0
               return (
                 <button
                   key={dayKey}
                   onClick={() => setSelectedDay(dayKey)}
                   className={`h-16 w-full border rounded p-2 text-left flex flex-col justify-between transition ${
-                    isSelected ? 'border-primary bg-primary/10' : 'border-muted'
+                    isSelected
+                      ? 'border-primary bg-primary/10 shadow-sm'
+                      : hasVisits
+                        ? 'border-primary/50 bg-primary/5 hover:bg-primary/10'
+                        : 'border-muted hover:border-muted-foreground/50'
                   }`}
                 >
                   <span className="text-sm font-semibold">{dayNum}</span>
                   {count > 0 && (
-                    <span className="text-xs text-primary font-semibold">{count} visita{count > 1 ? 's' : ''}</span>
+                    <span className="text-[11px] inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                      {count} visita{count > 1 ? 's' : ''}
+                    </span>
                   )}
                 </button>
               )
