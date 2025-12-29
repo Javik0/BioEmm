@@ -214,6 +214,9 @@ const createInactiveIcon = () => {
     return cropTypeMatch && statusMatch && inactiveOk
   })
 
+  const inactiveTotal = clients.filter((c) => c.status === 'Inactivo' && c.location).length
+  const inactiveVisible = filteredClients.filter((c) => c.status === 'Inactivo' && c.location).length
+
   const hasActiveFilters = selectedCropTypes.size > 0 || selectedStatuses.size > 0
 
   useEffect(() => {
@@ -444,11 +447,16 @@ const createInactiveIcon = () => {
         <Button
           size="sm"
           variant="outline"
-          className={`bg-white hover:bg-gray-100 shadow-md border border-gray-300 text-gray-700 ${showInactive ? 'border-gray-500 text-gray-800' : ''}`}
+          className={`bg-white/90 hover:bg-white shadow-md border border-gray-300 text-gray-700 ${showInactive ? 'border-gray-500 text-gray-800' : ''}`}
           onClick={() => setShowInactive((prev) => !prev)}
         >
           {showInactive ? <EyeSlash className="mr-2" size={18} /> : <Eye className="mr-2" size={18} />}
-          {showInactive ? 'Ocultar Inactivos' : 'Mostrar Inactivos'}
+          {showInactive ? 'Ocultar inactivos' : 'Mostrar inactivos'}
+          {showInactive && (
+            <Badge className="ml-2 h-5 w-auto px-1.5 flex items-center justify-center bg-gray-700 text-white text-xs">
+              {inactiveVisible}
+            </Badge>
+          )}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -582,7 +590,8 @@ const createInactiveIcon = () => {
       </div>
 
       <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur p-3 rounded-lg shadow-lg text-xs space-y-2 z-[1000] border border-gray-200">
-        <div className="font-semibold mb-2 text-gray-700">Leyenda de Cultivos</div>
+        <div className="font-semibold mb-2 text-gray-700">Leyenda</div>
+        <div className="text-[11px] text-muted-foreground mb-1">Cultivos</div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full" style={{ background: getCropColor('Flores') }}></div>
           <span className="text-gray-600">Flores</span>
@@ -604,10 +613,15 @@ const createInactiveIcon = () => {
           <span className="text-gray-600">Tubérculos</span>
         </div>
         {showInactive && (
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ background: '#6b7280' }}></div>
-            <span className="text-gray-600">Inactivos</span>
-          </div>
+          <>
+            <div className="border-t border-gray-200 my-2" />
+            <div className="text-[11px] text-muted-foreground mb-1">Estados</div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ background: '#6b7280' }}></div>
+              <span className="text-gray-600">Inactivos</span>
+              <Badge className="ml-auto h-5 px-1.5 bg-gray-700 text-white">{inactiveVisible}/{inactiveTotal}</Badge>
+            </div>
+          </>
         )}
       </div>
 
