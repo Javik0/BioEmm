@@ -377,6 +377,7 @@ export interface Visit {
   scheduledTime?: string // HH:mm
   type: VisitType
   status: VisitStatus
+  assignedTo?: string
   notes?: string
   completedAt?: string
   completionNotes?: string

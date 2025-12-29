@@ -25,6 +25,7 @@ export function VisitForm({ open, onOpenChange, onSubmit, client, editVisit }: V
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [time, setTime] = useState('09:00')
   const [type, setType] = useState<VisitType>('Seguimiento')
+  const [assignedTo, setAssignedTo] = useState('')
   const [notes, setNotes] = useState('')
 
   useEffect(() => {
@@ -33,11 +34,13 @@ export function VisitForm({ open, onOpenChange, onSubmit, client, editVisit }: V
         setDate(new Date(editVisit.scheduledDate))
         setTime(editVisit.scheduledTime || '09:00')
         setType(editVisit.type)
+        setAssignedTo(editVisit.assignedTo || '')
         setNotes(editVisit.notes || '')
       } else {
         setDate(new Date())
         setTime('09:00')
         setType('Seguimiento')
+        setAssignedTo('')
         setNotes('')
       }
     }
@@ -53,6 +56,7 @@ export function VisitForm({ open, onOpenChange, onSubmit, client, editVisit }: V
       scheduledDate: date.toISOString(),
       scheduledTime: time,
       type,
+      assignedTo: assignedTo.trim() || undefined,
       notes
     })
   }
@@ -120,6 +124,16 @@ export function VisitForm({ open, onOpenChange, onSubmit, client, editVisit }: V
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="assigned">Asignado a (técnico)</Label>
+            <Input
+              id="assigned"
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              placeholder="Ej: Juan Pérez"
+            />
           </div>
 
           <div className="space-y-2">

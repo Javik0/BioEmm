@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { CalendarDots, MapPin, Phone, WhatsappLogo, CheckCircle, XCircle, Clock, ArrowsClockwise, CalendarBlank, BellRinging, List as ListIcon, CaretLeft, CaretRight } from '@phosphor-icons/react'
 import type { Visit, VisitStatus } from '@/types'
 import { toast } from 'sonner'
@@ -61,6 +63,9 @@ export default function AgendaPage() {
     return Notification.permission as 'default' | 'granted' | 'denied'
   })
   const reminderTimers = useRef<number[]>([])
+  const [assignedFilter, setAssignedFilter] = useState<string>('all')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
 
   const visitsWithClient = useMemo(() => {
     return visits.map((v) => {
@@ -80,7 +85,25 @@ export default function AgendaPage() {
       tab === 'pending' ? (v.status === 'Programada' || v.status === 'Reprogramada') : true
     )
 
-    const sorted = [...filtered].sort((a, b) => buildDateTime(a).getTime() - buildDateTime(b).getTime())
+    const filteredByAssignee = assignedFilter === 'all'
+      ? filtered
+      : filtered.filter((v) => (v.assignedTo || '').toLowerCase() === assignedFilter.toLowerCase())
+
+    const filteredByDate = filteredByAssignee.filter((v) => {
+      const ts = buildDateTime(v).getTime()
+      if (!Number.isFinite(ts)) return false
+      if (startDate) {
+        const startTs = new Date(startDate).setHours(0, 0, 0, 0)
+        if (ts < startTs) return false
+      }
+      if (endDate) {
+        const endTs = new Date(endDate).setHours(23, 59, 59, 999)
+        if (ts > endTs) return false
+      }
+      return true
+    })
+
+    const sorted = [...filteredByDate].sort((a, b) => buildDateTime(a).getTime() - buildDateTime(b).getTime())
 
     return sorted.reduce<Record<string, typeof sorted>>((acc, visit) => {
       const key = visit.scheduledDate.split('T')[0]
@@ -89,6 +112,14 @@ export default function AgendaPage() {
       return acc
     }, {})
   }, [visitsWithClient, tab])
+
+  const assignedOptions = useMemo(() => {
+    const uniques = new Set<string>()
+    visitsWithClient.forEach((v) => {
+      if (v.assignedTo) uniques.add(v.assignedTo)
+    })
+    return Array.from(uniques)
+  }, [visitsWithClient])
 
   // Recordatorios in-app (y Notification API si el usuario lo permite)
   useEffect(() => {
@@ -214,6 +245,34 @@ export default function AgendaPage() {
         <TabsContent value="all" />
       </Tabs>
 
+      <div className="flex flex-wrap gap-3 items-end">
+        <div className="w-48">
+          <label className="text-xs text-muted-foreground">Técnico / asignado</label>
+          <Select value={assignedFilter} onValueChange={setAssignedFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {assignedOptions.map((name) => (
+                <SelectItem key={name} value={name}>{name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-44">
+          <label className="text-xs text-muted-foreground">Desde</label>
+          <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+        </div>
+        <div className="w-44">
+          <label className="text-xs text-muted-foreground">Hasta</label>
+          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => { setAssignedFilter('all'); setStartDate(''); setEndDate(''); }}>
+          Limpiar filtros
+        </Button>
+      </div>
+
       {view === 'list' && (
         <div className="space-y-4">
           {Object.entries(grouped).length === 0 && (
@@ -247,6 +306,9 @@ export default function AgendaPage() {
                           </div>
                           <div className="mt-1 font-semibold text-base">{visit.clientName}</div>
                           <div className="text-sm text-muted-foreground">{formatTime(visit.scheduledDate, visit.scheduledTime)}</div>
+                          {visit.assignedTo && (
+                            <div className="text-xs text-muted-foreground">Asignado: <span className="font-medium text-foreground">{visit.assignedTo}</span></div>
+                          )}
                           {visit.notes && <div className="text-sm mt-1 text-foreground/80">{visit.notes}</div>}
                         </div>
                         <div className="flex gap-2">
@@ -381,6 +443,9 @@ export default function AgendaPage() {
                             </div>
                             <div className="mt-1 font-semibold text-base">{visit.clientName}</div>
                             <div className="text-sm text-muted-foreground">{formatTime(visit.scheduledDate, visit.scheduledTime)}</div>
+                            {visit.assignedTo && (
+                              <div className="text-xs text-muted-foreground">Asignado: <span className="font-medium text-foreground">{visit.assignedTo}</span></div>
+                            )}
                             {visit.notes && <div className="text-sm mt-1 text-foreground/80">{visit.notes}</div>}
                           </div>
                           <div className="flex gap-2">
