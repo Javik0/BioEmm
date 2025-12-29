@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, Package, WarningCircle, ChartBar, Calculator, ShieldCheck, UsersThree } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, Package, WarningCircle, ChartBar, Calculator, ShieldCheck, UsersThree, CalendarDots } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { UserProfile } from '@/components/UserProfile'
@@ -19,6 +19,7 @@ import InventoryPage from '@/pages/InventoryPage'
 import ReportsPage from '@/pages/ReportsPage'
 import UsersPage from '@/pages/UsersPage'
 import RolesPage from '@/pages/RolesPage'
+import AgendaPage from '@/pages/AgendaPage'
 import logoImage from '@/assets/branding/BioEmm.jpg'
 
 function App() {
@@ -139,10 +140,14 @@ function App() {
 
           {/* Tabs Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="clients" className="flex items-center gap-2">
                 <Users size={18} />
                 Clientes
+              </TabsTrigger>
+              <TabsTrigger value="agenda" className="flex items-center gap-2">
+                <CalendarDots size={18} />
+                Agenda
               </TabsTrigger>
               <TabsTrigger value="products" className="flex items-center gap-2">
                 <Package size={18} />
@@ -177,6 +182,10 @@ function App() {
 
             <TabsContent value="clients">
               <ClientsPage />
+            </TabsContent>
+
+            <TabsContent value="agenda">
+              <AgendaPage />
             </TabsContent>
 
             <TabsContent value="products">
