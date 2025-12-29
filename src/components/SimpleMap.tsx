@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Globe, MapTrifold, Stack, CaretDown, Funnel, X, MagnifyingGlass } from '@phosphor-icons/react'
+import { Globe, Stack, CaretDown, Funnel, X, MagnifyingGlass } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,9 +128,9 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
   const selectedMarkerRef = useRef<L.Marker | null>(null)
-  const baseLayersRef = useRef<{ osm: L.TileLayer; satellite: L.TileLayer; hybrid: L.TileLayer } | null>(null)
+  const baseLayersRef = useRef<{ satellite: L.TileLayer; hybrid: L.TileLayer } | null>(null)
   
-  const [mapType, setMapType] = useState<'osm' | 'satellite' | 'hybrid'>('osm')
+  const [mapType, setMapType] = useState<'satellite' | 'hybrid'>('satellite')
   const [selectedCropTypes, setSelectedCropTypes] = useState<Set<CropType>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClientStatus>>(new Set())
   const [cropTypeSearch, setCropTypeSearch] = useState('')
@@ -191,12 +191,6 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
       dragging: true
     })
 
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-      minZoom: 5
-    })
-
     const satelliteLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
       attribution: '&copy; Google',
       maxZoom: 20,
@@ -209,10 +203,9 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
       minZoom: 5
     })
 
-    osmLayer.addTo(map)
+    satelliteLayer.addTo(map)
 
     baseLayersRef.current = {
-      osm: osmLayer,
       satellite: satelliteLayer,
       hybrid: hybridLayer
     }
@@ -234,13 +227,10 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   useEffect(() => {
     if (!mapRef.current || !baseLayersRef.current) return
 
-    mapRef.current.removeLayer(baseLayersRef.current.osm)
     mapRef.current.removeLayer(baseLayersRef.current.satellite)
     mapRef.current.removeLayer(baseLayersRef.current.hybrid)
 
-    if (mapType === 'osm') {
-      mapRef.current.addLayer(baseLayersRef.current.osm)
-    } else if (mapType === 'satellite') {
+    if (mapType === 'satellite') {
       mapRef.current.addLayer(baseLayersRef.current.satellite)
     } else {
       mapRef.current.addLayer(baseLayersRef.current.hybrid)
@@ -525,16 +515,11 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
               className="bg-white hover:bg-gray-100 shadow-md border border-gray-300 text-gray-700"
             >
               <Stack className="mr-2" size={18} weight="bold" />
-              {mapType === 'osm' ? 'Mapa Base' : mapType === 'satellite' ? 'Satélite' : 'Híbrido'}
+              {mapType === 'satellite' ? 'Satélite' : 'Híbrido'}
               <CaretDown className="ml-2" size={14} weight="bold" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => setMapType('osm')}>
-              <MapTrifold className="mr-2" size={18} weight={mapType === 'osm' ? 'fill' : 'regular'} />
-              Mapa Base
-              {mapType === 'osm' && <span className="ml-auto text-primary">✓</span>}
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setMapType('satellite')}>
               <Globe className="mr-2" size={18} weight={mapType === 'satellite' ? 'fill' : 'regular'} />
               Satélite

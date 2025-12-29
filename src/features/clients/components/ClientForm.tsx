@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import {
   AlertDialog,
@@ -82,6 +82,7 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   const [photoToDelete, setPhotoToDelete] = useState<ClientPhoto | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
+  const preventCloseRef = useRef(false)
 
   useEffect(() => {
     if (editClient) {
@@ -173,11 +174,29 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
     setCropCategory(undefined)
   }
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (!editClient) {
       resetForm()
     }
     onOpenChange(false)
+  }, [editClient, onOpenChange])
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      if (preventCloseRef.current) {
+        preventCloseRef.current = false
+        return
+      }
+      handleClose()
+      return
+    }
+
+    onOpenChange(true)
+  }
+
+  const handlePreventClose = (event: Event) => {
+    event.preventDefault()
+    preventCloseRef.current = true
   }
 
   const handleGetCurrentLocation = () => {
@@ -268,8 +287,12 @@ export function ClientForm({ open, onOpenChange, onSubmit, editClient }: ClientF
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent
+        className="max-w-5xl max-h-[92vh] overflow-y-auto"
+        onInteractOutside={handlePreventClose}
+        onEscapeKeyDown={handlePreventClose}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-2">
             <User size={28} weight="duotone" />
