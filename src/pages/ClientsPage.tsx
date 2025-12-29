@@ -44,6 +44,8 @@ export default function ClientsPage() {
   // Estado para el modal de confirmación de desactivación
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
   const [clientToDeactivate, setClientToDeactivate] = useState<Client | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
 
   const dosificationsList = dosifications || []
   const productsList = products || []
@@ -118,6 +120,11 @@ export default function ClientsPage() {
     setDeactivateDialogOpen(true)
   }
 
+  const handleRequestPermanentDelete = (client: Client) => {
+    setClientToDelete(client)
+    setDeleteDialogOpen(true)
+  }
+
   const confirmDeactivateClient = async () => {
     if (!clientToDeactivate) return
     
@@ -133,6 +140,20 @@ export default function ClientsPage() {
     } finally {
       setDeactivateDialogOpen(false)
       setClientToDeactivate(null)
+    }
+  }
+
+  const confirmPermanentDelete = async () => {
+    if (!clientToDelete) return
+
+    try {
+      await deleteClient(clientToDelete.id)
+      toast.success(`Cliente "${clientToDelete.name}" eliminado definitivamente`)
+    } catch (err: any) {
+      toast.error(err?.message || 'No se pudo eliminar el cliente')
+    } finally {
+      setDeleteDialogOpen(false)
+      setClientToDelete(null)
     }
   }
 
@@ -311,6 +332,7 @@ export default function ClientsPage() {
           }
         }}
         onReactivateClient={statusFilter !== 'active' ? handleReactivateClient : undefined}
+        onPermanentDelete={statusFilter === 'inactive' ? handleRequestPermanentDelete : undefined}
       />
 
       <ClientForm
@@ -407,6 +429,39 @@ export default function ClientsPage() {
             >
               <UserMinus size={16} className="mr-2" />
               Sí, desactivar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal para eliminación definitiva (solo inactivos) */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash size={24} weight="fill" />
+              Eliminar cliente definitivamente
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left space-y-2">
+              <p>
+                Esta acción <strong>no se puede deshacer</strong> y eliminará al cliente de la base.
+              </p>
+              <p className="font-semibold text-foreground text-lg">
+                {clientToDelete?.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Considera exportar o respaldar los datos asociados antes de continuar.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmPermanentDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              <Trash size={16} className="mr-2" />
+              Sí, eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

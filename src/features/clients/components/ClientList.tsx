@@ -11,9 +11,10 @@ interface ClientListProps {
   onCreateDosification: (client: Client) => void
   onLocateClient?: (client: Client) => void
   onReactivateClient?: (client: Client) => void
+  onPermanentDelete?: (client: Client) => void
 }
 
-export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDosification, onLocateClient, onReactivateClient }: ClientListProps) {
+export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDosification, onLocateClient, onReactivateClient, onPermanentDelete }: ClientListProps) {
   const getStatusColor = (status: string) => {
     const colors = {
       'Prospecto': 'bg-yellow-100 text-yellow-800',
@@ -95,6 +96,17 @@ export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDos
                     >
                       <UserPlus className="mr-1" size={16} />
                       Reactivar
+                    </Button>
+                  )}
+
+                  {onPermanentDelete && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(client)}
+                    >
+                      <Trash size={16} />
+                      Eliminar
                     </Button>
                   )}
                 </>

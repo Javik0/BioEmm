@@ -279,15 +279,25 @@ const createInactiveIcon = () => {
 
   // Focus on specific client (zoom + open popup)
   useEffect(() => {
-    if (!mapRef.current || !focusClient?.location) return
+    if (!mapRef.current) return
+
+    // Si había un marcador de ubicación manual, quitarlo para no superponer con el foco
+    if (selectedMarkerRef.current) {
+      selectedMarkerRef.current.remove()
+      selectedMarkerRef.current = null
+    }
+
+    if (!focusClient?.location) return
+
+    // Cerrar popups existentes antes de abrir el nuevo
+    markersRef.current.forEach((marker) => marker.closePopup())
 
     mapRef.current.setView(
       [focusClient.location.lat, focusClient.location.lng],
-      14,
+      15,
       { animate: true, duration: 0.8 }
     )
 
-    // open popup if marker exists
     const marker = markersRef.current.get(focusClient.id)
     if (marker) {
       marker.openPopup()
