@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Plus, MapTrifold, MagnifyingGlass, Warning, Trash, UserMinus, Users, UsersThree } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { useRef } from 'react'
 
 export default function ClientsPage() {
   const { clients: clientsList, upsertClient, deleteClient } = useClients()
@@ -40,6 +41,7 @@ export default function ClientsPage() {
   const [showMap, setShowMap] = useState(false)
   const [focusClient, setFocusClient] = useState<Client | undefined>()
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active')
+  const mapSectionRef = useRef<HTMLDivElement | null>(null)
   
   // Estado para el modal de confirmación de desactivación
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
@@ -313,11 +315,13 @@ export default function ClientsPage() {
       </div>
 
       {showMap && (
-        <SimpleMap
-          clients={filteredClients.filter(c => c.status !== 'Inactivo')}
-          onClientClick={handleViewDetail}
-          focusClient={focusClient}
-        />
+        <div ref={mapSectionRef}>
+          <SimpleMap
+            clients={filteredClients.filter(c => c.status !== 'Inactivo')}
+            onClientClick={handleViewDetail}
+            focusClient={focusClient}
+          />
+        </div>
       )}
 
       <ClientList
@@ -329,6 +333,10 @@ export default function ClientsPage() {
           if (client.location) {
             setFocusClient(client)
             setShowMap(true)
+            // Hacer scroll hacia el mapa para que el usuario vea el enfoque
+            requestAnimationFrame(() => {
+              mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            })
           }
         }}
         onReactivateClient={statusFilter !== 'active' ? handleReactivateClient : undefined}
