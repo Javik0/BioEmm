@@ -24,6 +24,11 @@ export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDos
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
   }
 
+  const formatDateTime = (value?: string) => {
+    if (!value) return 'N/D'
+    return new Date(value).toLocaleString('es-EC', { dateStyle: 'medium', timeStyle: 'short' })
+  }
+
   if (clients.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -79,6 +84,18 @@ export function ClientList({ clients, onClientClick, onDeleteClient, onCreateDos
                 <div className="flex items-center gap-2">
                   <MapPin size={16} className="text-primary" />
                   <span className="font-medium">{client.cropType} - {client.hectares} ha</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="flex flex-wrap gap-1">
+                    <span className="font-medium text-primary/80">Creado</span>
+                    <span className="truncate">{client.createdBy || 'N/D'} · {formatDateTime(client.createdAt)}</span>
+                  </div>
+                  {client.updatedAt && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="font-medium text-amber-700">Editado</span>
+                      <span className="truncate">{client.updatedBy || 'N/D'} · {formatDateTime(client.updatedAt)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
