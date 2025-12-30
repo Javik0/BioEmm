@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useClients } from '@/features/clients'
 import { useVisits } from '@/features/visits'
+import { useUsers } from '@/features/users'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,7 @@ function getGoogleMapsUrl(lat?: number, lng?: number, address?: string) {
 export default function AgendaPage() {
   const { clients } = useClients()
   const { visits, updateVisit } = useVisits()
+  const { users } = useUsers()
   const [tab, setTab] = useState<'pending' | 'all'>('pending')
   const [view, setView] = useState<'list' | 'calendar'>('list')
   const [monthOffset, setMonthOffset] = useState(0)
@@ -111,15 +113,20 @@ export default function AgendaPage() {
       acc[key].push(visit)
       return acc
     }, {})
-  }, [visitsWithClient, tab])
+  }, [visitsWithClient, tab, assignedFilter, startDate, endDate])
 
   const assignedOptions = useMemo(() => {
     const uniques = new Set<string>()
+    users
+      .filter((u) => u.status === 'Activo')
+      .forEach((u) => uniques.add(u.displayName))
+
     visitsWithClient.forEach((v) => {
       if (v.assignedTo) uniques.add(v.assignedTo)
     })
-    return Array.from(uniques)
-  }, [visitsWithClient])
+
+    return Array.from(uniques).sort((a, b) => a.localeCompare(b))
+  }, [users, visitsWithClient])
 
   // Recordatorios in-app (y Notification API si el usuario lo permite)
   useEffect(() => {

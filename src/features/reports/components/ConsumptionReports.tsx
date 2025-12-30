@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Client, Product, StockMovement } from '@/types'
+import { Client, Product, StockMovement, Dosification } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,7 @@ interface ConsumptionReportsProps {
   clients: Client[]
   products: Product[]
   stockMovements: StockMovement[]
+  dosifications?: Dosification[]
 }
 
 type PeriodType = 'week' | 'month' | 'quarter' | 'year' | 'custom' | 'all'
@@ -56,13 +57,44 @@ interface ConsumptionByProduct {
   unit: string
 }
 
-export function ConsumptionReports({ clients, products, stockMovements }: ConsumptionReportsProps) {
+export function ConsumptionReports({ clients, products, stockMovements, dosifications = [] }: ConsumptionReportsProps) {
+    const findProduct = (productId: string) => products.find(p => p.id === productId)
+    const findPresentation = (productId?: string, presentationId?: string) => {
+      if (!productId || !presentationId) return undefined
+      const product = findProduct(productId)
+      return product?.presentations?.find((p) => p.id === presentationId)
+    }
+
   const [period, setPeriod] = useState<PeriodType>('month')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined)
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined)
   const [includeInactive, setIncludeInactive] = useState(false)
+
+  const getMovementClient = (movement: StockMovement) => {
+    if (movement.clientId && movement.clientName) {
+      return { clientId: movement.clientId, clientName: movement.clientName }
+    }
+
+    const fromReference = movement.relatedTo?.reference?.match(/Cliente:\s*([^\-]+)/)
+    const fromReason = movement.reason?.match(/Cliente:\s*([^\-]+)/)
+    const name = fromReference?.[1]?.trim() || fromReason?.[1]?.trim()
+
+    if (name) {
+      const client = clients.find(c => c.name === name)
+      return { clientId: client?.id || name, clientName: name }
+    }
+
+    if (movement.relatedTo?.type === 'dosification' && movement.relatedTo.id) {
+      const d = dosifications.find((d) => d.id === movement.relatedTo?.id)
+      if (d) {
+        return { clientId: d.clientId, clientName: d.clientName }
+      }
+    }
+
+    return null
+  }
 
   const { startDate, endDate } = useMemo(() => {
     const now = new Date()
@@ -90,24 +122,20 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
   const filteredMovements = useMemo(() => {
     return stockMovements.filter(movement => {
       if (movement.type !== 'exit') return false
-      
+
+      const movementClient = getMovementClient(movement)
       const movementDate = parseISO(movement.createdAt)
       const inPeriod = period === 'all' || isWithinInterval(movementDate, { start: startDate, end: endDate })
       
       if (!inPeriod) return false
 
-      if (movement.relatedTo?.type === 'dosification') {
-        const clientName = movement.relatedTo.reference?.split(' - Cliente: ')[1]?.split(' - ')[0]
-        if (selectedClient !== 'all' && clientName) {
-          const client = clients.find(c => c.name === clientName)
-          if (client?.id !== selectedClient) return false
-        }
+      if (selectedClient !== 'all') {
+        if (!movementClient || movementClient.clientId !== selectedClient) return false
+      }
 
-        // Si no incluimos inactivos, excluir movimientos de clientes inactivos
-        if (!includeInactive && clientName) {
-          const client = clients.find(c => c.name === clientName)
-          if (client?.status === 'Inactivo') return false
-        }
+      if (!includeInactive && movementClient) {
+        const client = clients.find(c => c.id === movementClient.clientId || c.name === movementClient.clientName)
+        if (client?.status === 'Inactivo') return false
       }
 
       if (selectedCategory !== 'all') {
@@ -125,22 +153,24 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
     filteredMovements.forEach(movement => {
       if (movement.relatedTo?.type !== 'dosification') return
 
-      const clientName = movement.relatedTo.reference?.split(' - Cliente: ')[1]?.split(' - ')[0]
-      if (!clientName) return
+      const movementClient = getMovementClient(movement)
+      if (!movementClient) return
 
-      const client = clients.find(c => c.name === clientName)
-      if (!client) return
+      const client = clients.find(c => c.id === movementClient.clientId || c.name === movementClient.clientName)
+      if (!includeInactive && client?.status === 'Inactivo') return
 
-      // Excluir clientes inactivos del agregado si no se ha marcado incluir
-      if (!includeInactive && client.status === 'Inactivo') return
+      const clientId = client?.id || movementClient.clientId
+      const clientName = client?.name || movementClient.clientName
+      if (!clientId || !clientName) return
 
-      const product = products.find(p => p.id === movement.productId)
-      const value = (product?.costPerUnit || 0) * movement.quantity
+      const product = findProduct(movement.productId)
+      const pres = findPresentation(movement.productId, movement.presentationId)
+      const value = (pres?.pvp ?? product?.costPerUnit ?? 0) * movement.quantity
 
-      if (!clientMap.has(client.id)) {
-        clientMap.set(client.id, {
-          clientId: client.id,
-          clientName: client.name,
+      if (!clientMap.has(clientId)) {
+        clientMap.set(clientId, {
+          clientId,
+          clientName,
           totalQuantity: 0,
           totalValue: 0,
           productCount: 0,
@@ -148,7 +178,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
         })
       }
 
-      const clientData = clientMap.get(client.id)!
+      const clientData = clientMap.get(clientId)!
       clientData.totalQuantity += movement.quantity
       clientData.totalValue += value
 
@@ -174,10 +204,11 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
     const productMap = new Map<string, ConsumptionByProduct>()
 
     filteredMovements.forEach(movement => {
-      const product = products.find(p => p.id === movement.productId)
+      const product = findProduct(movement.productId)
       if (!product) return
 
-      const value = (product.costPerUnit || 0) * movement.quantity
+      const pres = findPresentation(movement.productId, movement.presentationId)
+      const value = (pres?.pvp ?? product.costPerUnit ?? 0) * movement.quantity
 
       if (!productMap.has(product.id)) {
         productMap.set(product.id, {
@@ -187,7 +218,7 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
           totalQuantity: 0,
           totalValue: 0,
           clientCount: 0,
-          unit: product.unit
+          unit: pres?.unit || product.unit
         })
       }
 
@@ -202,9 +233,9 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
       const uniqueClients = new Set<string>()
       filteredMovements.forEach(movement => {
         if (movement.productId === productData.productId && movement.relatedTo?.type === 'dosification') {
-          const clientName = movement.relatedTo.reference?.split(' - Cliente: ')[1]?.split(' - ')[0]
-          if (clientName) {
-            const client = clients.find(c => c.name === clientName)
+          const movementClient = getMovementClient(movement)
+          if (movementClient) {
+            const client = clients.find(c => c.id === movementClient.clientId || c.name === movementClient.clientName)
             if (client) uniqueClients.add(client.id)
           }
         }
@@ -218,8 +249,9 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
   const totalConsumption = useMemo(() => {
     return {
       totalValue: filteredMovements.reduce((sum, m) => {
-        const product = products.find(p => p.id === m.productId)
-        return sum + ((product?.costPerUnit || 0) * m.quantity)
+        const product = findProduct(m.productId)
+        const pres = findPresentation(m.productId, m.presentationId)
+        return sum + ((pres?.pvp ?? product?.costPerUnit ?? 0) * m.quantity)
       }, 0),
       totalMovements: filteredMovements.length,
       activeClients: new Set(consumptionByClient.map(c => c.clientId)).size,
@@ -257,15 +289,16 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
         nextDate.setMonth(nextDate.getMonth() + 1)
       }
 
-      const movementsInPeriod = filteredMovements.filter(m => {
-        const movementDate = parseISO(m.createdAt)
-        return movementDate >= date && movementDate < nextDate
-      })
+        const movementsInPeriod = filteredMovements.filter(m => {
+          const movementDate = parseISO(m.createdAt)
+          return movementDate >= date && movementDate < nextDate
+        })
 
-      const value = movementsInPeriod.reduce((sum, m) => {
-        const product = products.find(p => p.id === m.productId)
-        return sum + ((product?.costPerUnit || 0) * m.quantity)
-      }, 0)
+        const value = movementsInPeriod.reduce((sum, m) => {
+          const product = findProduct(m.productId)
+          const pres = findPresentation(m.productId, m.presentationId)
+          return sum + ((pres?.pvp ?? product?.costPerUnit ?? 0) * m.quantity)
+        }, 0)
 
       const quantity = movementsInPeriod.reduce((sum, m) => sum + m.quantity, 0)
 
@@ -283,10 +316,10 @@ export function ConsumptionReports({ clients, products, stockMovements }: Consum
     const categoryMap = new Map<string, { value: number; quantity: number }>()
     
     filteredMovements.forEach(movement => {
-      const product = products.find(p => p.id === movement.productId)
+      const product = findProduct(movement.productId)
       if (!product) return
-      
-      const value = (product.costPerUnit || 0) * movement.quantity
+      const pres = findPresentation(movement.productId, movement.presentationId)
+      const value = (pres?.pvp ?? product.costPerUnit ?? 0) * movement.quantity
       const existing = categoryMap.get(product.category) || { value: 0, quantity: 0 }
       
       categoryMap.set(product.category, {

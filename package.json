@@ -9,7 +9,9 @@
         "build": "tsc -b --noCheck && vite build",
         "lint": "eslint .",
         "optimize": "vite optimize",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "clean:unused-products": "node scripts/maintenance/delete_unused_products.mjs",
+        "import:products-excel": "node scripts/maintenance/import_products_from_excel.mjs"
     },
     "dependencies": {
         "@github/spark": ">=0.43.1 <1",
@@ -55,6 +57,8 @@
         "date-fns": "^3.6.0",
         "embla-carousel-react": "^8.5.2",
         "firebase": "^12.7.0",
+        "firebase-admin": "^12.7.0",
+        "xlsx": "^0.20.2",
         "framer-motion": "^12.6.2",
         "input-otp": "^1.4.2",
         "leaflet": "^1.9.4",

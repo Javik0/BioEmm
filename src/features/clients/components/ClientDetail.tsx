@@ -27,7 +27,8 @@ import {
   Plus,
   CalendarPlus,
   WhatsappLogo,
-  PhoneCall
+  PhoneCall,
+  ClipboardText
 } from '@phosphor-icons/react'
 import { useState } from 'react'
 
@@ -80,7 +81,11 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+        <DialogContent 
+          className="max-w-5xl max-h-[95vh] overflow-y-auto"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -126,6 +131,19 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
                   Nueva Dosificación
                 </Button>
               )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  sessionStorage.setItem('ordersPreferredClientId', client.id)
+                  window.location.hash = `orders:${client.id}`
+                  onOpenChange(false)
+                }}
+                className="border-primary/40 text-primary"
+              >
+                <ClipboardText size={16} className="mr-1" weight="fill" />
+                Gestionar Órdenes
+              </Button>
               {onScheduleVisit && (
                 <Button 
                   size="sm" 

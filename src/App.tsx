@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dosification } from '@/types'
 import { AuthGate } from '@/components/AuthGate'
 import { useClients } from '@/features/clients'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Users, Flask, MapTrifold, Package, WarningCircle, ChartBar, Calculator, ShieldCheck, UsersThree, CalendarDots } from '@phosphor-icons/react'
+import { Plus, Users, Flask, MapTrifold, Package, WarningCircle, ChartBar, Calculator, ShieldCheck, UsersThree, CalendarDots, ClipboardText, BellSimple } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { UserProfile } from '@/components/UserProfile'
@@ -20,6 +20,8 @@ import ReportsPage from '@/pages/ReportsPage'
 import UsersPage from '@/pages/UsersPage'
 import RolesPage from '@/pages/RolesPage'
 import AgendaPage from '@/pages/AgendaPage'
+import OrdersPage from '@/pages/OrdersPage'
+import AlertsPage from '@/pages/AlertsPage'
 import logoImage from '@/assets/branding/BioEmm.jpg'
 
 function App() {
@@ -35,6 +37,25 @@ function App() {
   const activeClients = clientsList.filter(c => c.status === 'Activo').length
   const lowStockProducts = productsList.filter(p => p.currentStock <= p.minStock).length
   const criticalStockProducts = productsList.filter(p => p.currentStock <= p.minStock * 0.5).length
+
+  useEffect(() => {
+    const syncHash = () => {
+      const hash = window.location.hash.replace('#', '')
+      if (!hash) return
+      if (hash.startsWith('orders')) {
+        setActiveTab('orders')
+        const parts = hash.split(':')
+        if (parts[1]) {
+          sessionStorage.setItem('ordersPreferredClientId', parts[1])
+        }
+      }
+      if (hash === 'alerts') setActiveTab('alerts')
+      if (hash === 'inventory') setActiveTab('inventory')
+    }
+    syncHash()
+    window.addEventListener('hashchange', syncHash)
+    return () => window.removeEventListener('hashchange', syncHash)
+  }, [])
 
   return (
     <AuthGate>
@@ -140,7 +161,7 @@ function App() {
 
           {/* Tabs Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8">
+            <TabsList className="grid w-full grid-cols-10">
               <TabsTrigger value="clients" className="flex items-center gap-2">
                 <Users size={18} />
                 Clientes
@@ -165,6 +186,14 @@ function App() {
                     {lowStockProducts}
                   </Badge>
                 )}
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="flex items-center gap-2">
+                <ClipboardText size={18} />
+                Órdenes
+              </TabsTrigger>
+              <TabsTrigger value="alerts" className="flex items-center gap-2">
+                <BellSimple size={18} />
+                Alertas
               </TabsTrigger>
               <TabsTrigger value="reports" className="flex items-center gap-2">
                 <ChartBar size={18} />
@@ -198,6 +227,14 @@ function App() {
 
             <TabsContent value="inventory">
               <InventoryPage />
+            </TabsContent>
+
+            <TabsContent value="orders">
+              <OrdersPage />
+            </TabsContent>
+
+            <TabsContent value="alerts">
+              <AlertsPage />
             </TabsContent>
 
             <TabsContent value="reports">

@@ -130,9 +130,9 @@ export default function UsersPage() {
   const handleEdit = (user: User) => {
     setEditingUser(user)
     setFormData({
-      email: user.email,
-      displayName: user.displayName,
-      phone: user.phone || '',
+      email: user.email.trim(),
+      displayName: user.displayName.toUpperCase(),
+      phone: user.phone?.trim() || '',
       roleId: user.roleId,
       status: user.status
     })
@@ -155,8 +155,23 @@ export default function UsersPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    const normalizedEmail = formData.email.replace(/\s+/g, '').toLowerCase()
+    const normalizedName = formData.displayName.trim().toUpperCase()
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!normalizedName) {
+      toast.error('El nombre es requerido')
+      return
+    }
+
+    if (!emailRegex.test(normalizedEmail)) {
+      toast.error('Ingresa un correo válido')
+      return
+    }
     
-    if (!formData.email.trim() || !formData.displayName.trim() || !formData.roleId) {
+    if (!formData.roleId) {
       toast.error('Complete todos los campos requeridos')
       return
     }
@@ -166,9 +181,9 @@ export default function UsersPage() {
     if (editingUser) {
       setUsers(users.map(u => u.id === editingUser.id ? {
         ...u,
-        email: formData.email,
-        displayName: formData.displayName,
-        phone: formData.phone,
+        email: normalizedEmail,
+        displayName: normalizedName,
+        phone: formData.phone.trim(),
         roleId: formData.roleId,
         roleName: selectedRole?.name || '',
         status: formData.status,
@@ -178,9 +193,9 @@ export default function UsersPage() {
     } else {
       const newUser: User = {
         id: Date.now().toString(),
-        email: formData.email,
-        displayName: formData.displayName,
-        phone: formData.phone,
+        email: normalizedEmail,
+        displayName: normalizedName,
+        phone: formData.phone.trim(),
         roleId: formData.roleId,
         roleName: selectedRole?.name || '',
         status: formData.status,
@@ -409,8 +424,12 @@ export default function UsersPage() {
       </Card>
 
       {/* Dialog para Crear/Editar */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
+        <DialogContent 
+          className="max-w-md"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>
               {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
@@ -428,7 +447,7 @@ export default function UsersPage() {
               <Input
                 id="displayName"
                 value={formData.displayName}
-                onChange={(e) => setFormData({...formData, displayName: e.target.value})}
+                onChange={(e) => setFormData({...formData, displayName: e.target.value.toUpperCase()})}
                 placeholder="Ej: Juan Pérez"
               />
             </div>
@@ -439,7 +458,7 @@ export default function UsersPage() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({...formData, email: e.target.value.replace(/\s+/g, '')})}
                 placeholder="usuario@ejemplo.com"
               />
             </div>
@@ -449,7 +468,7 @@ export default function UsersPage() {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                onChange={(e) => setFormData({...formData, phone: e.target.value.trim()})}
                 placeholder="0999999999"
               />
             </div>

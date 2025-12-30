@@ -236,20 +236,43 @@ export type ProductUnit =
   | 'kg' 
   | 'g'
   | 'ml'
+  | 'cc'
   | 'unidades'
+
+export interface ProductPresentation {
+  id: string
+  label: string // Ej: "20L", "500cc"
+  unit: ProductUnit
+  pvp: number
+  discounts?: {
+    d10?: number
+    d15?: number
+    d20?: number
+    d25?: number
+    d35?: number
+  }
+  stock: {
+    current: number
+    min: number
+    max?: number
+  }
+  sku?: string
+  notes?: string
+}
 
 export interface Product {
   id: string
   name: string
   code?: string
   category: ProductCategory
-  unit: ProductUnit
+  unit: ProductUnit // Unidad principal del producto base
   currentStock: number
   minStock: number
   maxStock?: number
   costPerUnit?: number
   supplier?: string
   sku?: string
+  presentations?: ProductPresentation[] // Stock y precio por presentación
   createdAt: string
   lastRestockDate?: string
   notes?: string
@@ -259,13 +282,17 @@ export interface StockMovement {
   id: string
   productId: string
   productName: string
+  presentationId?: string
+  presentationLabel?: string
   type: 'entry' | 'exit' | 'adjustment'
   quantity: number
   previousStock: number
   newStock: number
   reason: string
+  clientId?: string
+  clientName?: string
   relatedTo?: {
-    type: 'dosification' | 'purchase' | 'manual'
+    type: 'dosification' | 'purchase' | 'manual' | 'order'
     id?: string
     reference?: string
   }
@@ -273,9 +300,44 @@ export interface StockMovement {
   createdBy?: string
 }
 
+export type OrderStatus = 'draft' | 'confirmed' | 'delivered' | 'canceled' | 'returned'
+
+export type PaymentStatus = 'pending' | 'paid' | 'partial' | 'overdue'
+
+export interface OrderItem {
+  productId: string
+  productName: string
+  presentationId?: string
+  presentationLabel?: string
+  unit: string
+  quantity: number
+  unitPrice?: number
+  lineTotal?: number
+  stockMovementId?: string
+}
+
+export interface Order {
+  id: string
+  clientId: string
+  clientName: string
+  status: OrderStatus
+  paymentStatus?: PaymentStatus
+  orderDate: string
+  dueDate?: string
+  total?: number
+  currency?: string
+  notes?: string
+  createdBy?: string
+  createdAt: string
+  updatedAt?: string
+  items: OrderItem[]
+}
+
 export interface DosificationProduct {
   productId: string
   productName: string
+  presentationId?: string
+  presentationLabel?: string
   quantity: number
   unit: string
 }
@@ -290,6 +352,7 @@ export interface Dosification {
   products: DosificationProduct[]
   notes?: string
   status: 'Pendiente' | 'Aplicada' | 'Completada'
+  nextApplicationDate?: string
 }
 
 export type CropCategory = 
@@ -382,6 +445,7 @@ export interface Visit {
   completedAt?: string
   completionNotes?: string
   createdAt: string
+  reminderDaysBefore?: number
 }
 
 // Roles y Permisos

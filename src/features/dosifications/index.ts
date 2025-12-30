@@ -5,4 +5,5 @@ export { CropCalculator } from './components/CropCalculator'
 // Hooks
 export { useDosifications } from './hooks/useDosifications'
 export { useDosificationProtocols } from './hooks/useDosificationProtocols'
+export { useDosificationActions } from './hooks/useDosificationActions'
 

@@ -18,9 +18,11 @@ interface DosificationFormProps {
   onSubmit: (dosification: Omit<Dosification, 'id' | 'date'>) => void
   client?: Client
   products: Product[]
+  mode?: 'create' | 'edit'
+  initialDosification?: Dosification
 }
 
-export function DosificationForm({ open, onOpenChange, onSubmit, client, products: inventoryProducts }: DosificationFormProps) {
+export function DosificationForm({ open, onOpenChange, onSubmit, client, products: inventoryProducts, mode = 'create', initialDosification }: DosificationFormProps) {
   const [hectares, setHectares] = useState(client?.hectares.toString() || '')
   const [products, setProducts] = useState<DosificationProduct[]>([])
   const [notes, setNotes] = useState('')
@@ -30,10 +32,16 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
   const [selectedStageName, setSelectedStageName] = useState<string>('')
 
   useEffect(() => {
+    if (initialDosification) {
+      setHectares(initialDosification.hectares.toString())
+      setProducts(initialDosification.products)
+      setNotes(initialDosification.notes || '')
+      return
+    }
     if (client) {
       setHectares(client.hectares.toString())
     }
-  }, [client])
+  }, [initialDosification, client])
 
   const handleLoadStage = (protocolId: string, stageName: string) => {
     const protocol = protocols.find(p => p.id === protocolId)
@@ -54,12 +62,16 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
         ip.name.toLowerCase().trim() === pp.name.toLowerCase().trim() ||
         (ip.code && pp.code && ip.code === pp.code)
       )
-  
+
+      const firstPresentation = inventoryProduct?.presentations?.[0]
+
       return {
         productId: inventoryProduct?.id || '', 
         productName: pp.name, // Keep original name if not found
+        presentationId: firstPresentation?.id,
+        presentationLabel: firstPresentation?.label,
         quantity: Number((pp.quantity * hectaresNum).toFixed(2)),
-        unit: pp.unit || 'kg'
+        unit: firstPresentation?.unit || pp.unit || inventoryProduct?.unit || 'kg'
       }
     })
   
@@ -76,30 +88,51 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
   const addProduct = () => {
     setProducts([
       ...products,
-      { productId: '', productName: '', quantity: 0, unit: 'kg' }
+      { productId: '', productName: '', presentationId: '', quantity: 0, unit: 'kg' }
     ])
   }
 
   const updateProduct = (index: number, field: keyof DosificationProduct, value: string | number) => {
-    const updated = [...products]
-    updated[index] = { ...updated[index], [field]: value }
-    setProducts(updated)
+    setProducts((prev) => {
+      const updated = [...prev]
+      if (!updated[index]) return prev
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
+  }
+
+  const updateProductFields = (index: number, updates: Partial<DosificationProduct>) => {
+    setProducts((prev) => {
+      const updated = [...prev]
+      if (!updated[index]) return prev
+      updated[index] = { ...updated[index], ...updates }
+      return updated
+    })
   }
 
   const removeProduct = (index: number) => {
     setProducts(products.filter((_, i) => i !== index))
   }
 
-  const getProductStock = (productId: string) => {
+  const getStockForSelection = (productId: string, presentationId?: string) => {
     const product = inventoryProducts.find(p => p.id === productId)
-    return product?.currentStock || 0
+    if (!product) return { available: 0, unit: '' }
+
+    if (presentationId) {
+      const pres = product.presentations?.find((p) => p.id === presentationId)
+      if (pres) return { available: pres.stock?.current ?? 0, unit: pres.unit }
+    }
+
+    const total = product.presentations?.reduce((acc, p) => acc + (p.stock?.current ?? 0), 0)
+    if (product.presentations?.length) return { available: total ?? 0, unit: product.unit }
+    return { available: product.currentStock, unit: product.unit }
   }
 
   const hasStockIssues = () => {
     return products.some(p => {
       if (!p.productId) return false
-      const availableStock = getProductStock(p.productId)
-      return p.quantity > availableStock
+      const { available } = getStockForSelection(p.productId, p.presentationId)
+      return p.quantity > available
     })
   }
 
@@ -140,13 +173,19 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
       cropType: client.cropType,
       products,
       notes: notes || undefined,
-      status: 'Pendiente'
+      status: initialDosification?.status || 'Pendiente'
     })
 
     resetForm()
   }
 
   const resetForm = () => {
+    if (initialDosification) {
+      setHectares(initialDosification.hectares.toString())
+      setProducts(initialDosification.products)
+      setNotes(initialDosification.notes || '')
+      return
+    }
     setHectares(client?.hectares.toString() || '')
     setProducts([])
     setNotes('')
@@ -164,9 +203,12 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-3xl max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(event) => event.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle className="text-2xl">Nueva Dosificación</DialogTitle>
+          <DialogTitle className="text-2xl">{mode === 'edit' ? 'Editar Dosificación' : 'Nueva Dosificación'}</DialogTitle>
           {client && (
             <p className="text-sm text-muted-foreground">
               Cliente: <span className="font-semibold">{client.name}</span> • {client.cropType}
@@ -279,7 +321,8 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
               ) : (
                 products.map((product, index) => {
                   const inventoryProduct = inventoryProducts.find(p => p.id === product.productId)
-                  const availableStock = inventoryProduct?.currentStock || 0
+                  const availableData = getStockForSelection(product.productId, product.presentationId)
+                  const availableStock = availableData.available
                   const hasStock = product.productId && product.quantity <= availableStock
                   const stockWarning = product.productId && product.quantity > availableStock
 
@@ -303,13 +346,24 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
                           <div className="col-span-2">
                             <Label className="text-xs">Producto del Inventario</Label>
                             <Select
-                              value={product.productId}
+                              value={product.productId || ''}
                               onValueChange={(productId) => {
                                 const selected = inventoryProducts.find(p => p.id === productId)
                                 if (selected) {
-                                  updateProduct(index, 'productId', productId)
-                                  updateProduct(index, 'productName', selected.name)
-                                  updateProduct(index, 'unit', selected.unit)
+                                  const firstPres = selected.presentations?.[0]
+                                  updateProductFields(index, {
+                                    productId,
+                                    productName: selected.name,
+                                    presentationId: firstPres?.id || '',
+                                    presentationLabel: firstPres?.label,
+                                    unit: firstPres?.unit || selected.unit,
+                                  })
+                                } else {
+                                  updateProductFields(index, {
+                                    productId: '',
+                                    presentationId: '',
+                                    presentationLabel: '',
+                                  })
                                 }
                               }}
                             >
@@ -317,12 +371,47 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
                                 <SelectValue placeholder="Selecciona un producto" />
                               </SelectTrigger>
                               <SelectContent>
-                                {inventoryProducts.map((p) => (
-                                  <SelectItem key={p.id} value={p.id}>
+                                {inventoryProducts.map((p) => {
+                                  const totalStock = p.presentations?.reduce((acc, pres) => acc + (pres.stock?.current ?? 0), 0) ?? p.currentStock
+                                  return (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      <div className="flex items-center justify-between gap-4">
+                                        <span>{p.name}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                          Stock: {totalStock} {p.unit}
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  )
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="col-span-2">
+                            <Label className="text-xs">Presentación</Label>
+                            <Select
+                              value={product.presentationId || ''}
+                              onValueChange={(presentationId) => {
+                                const selected = inventoryProduct?.presentations?.find((p) => p.id === presentationId)
+                                updateProductFields(index, {
+                                  presentationId,
+                                  presentationLabel: selected?.label,
+                                  unit: selected?.unit || product.unit,
+                                })
+                              }}
+                              disabled={!inventoryProduct?.presentations?.length}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={inventoryProduct?.presentations?.length ? 'Selecciona presentación' : 'Sin presentaciones'} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {inventoryProduct?.presentations?.map((pres) => (
+                                  <SelectItem key={pres.id} value={pres.id}>
                                     <div className="flex items-center justify-between gap-4">
-                                      <span>{p.name}</span>
+                                      <span>{pres.label}</span>
                                       <span className="text-xs text-muted-foreground">
-                                        Stock: {p.currentStock} {p.unit}
+                                        PVP ${pres.pvp.toFixed(2)} · Stock {pres.stock?.current ?? 0} {pres.unit}
                                       </span>
                                     </div>
                                   </SelectItem>
@@ -344,11 +433,7 @@ export function DosificationForm({ open, onOpenChange, onSubmit, client, product
 
                           <div>
                             <Label className="text-xs">Unidad</Label>
-                            <Input
-                              value={product.unit}
-                              disabled
-                              className="bg-muted"
-                            />
+                            <Input value={product.unit} disabled className="bg-muted" />
                           </div>
                         </div>
 

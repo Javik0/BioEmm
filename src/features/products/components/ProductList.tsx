@@ -21,19 +21,30 @@ interface ProductListProps {
 }
 
 export function ProductList({ products, onEditProduct, onDeleteProduct, onAdjustStock }: ProductListProps) {
+  const aggregateStock = (product: Product) => {
+    if (product.presentations?.length) {
+      const current = product.presentations.reduce((sum, p) => sum + (p.stock?.current ?? 0), 0)
+      const min = product.presentations.reduce((sum, p) => sum + (p.stock?.min ?? 0), 0)
+      const max = product.presentations.every((p) => p.stock?.max == null)
+        ? undefined
+        : product.presentations.reduce((sum, p) => sum + (p.stock?.max ?? 0), 0)
+      return { current, min, max }
+    }
+    return { current: product.currentStock, min: product.minStock, max: product.maxStock }
+  }
+
   const getStockStatus = (product: Product): 'critical' | 'low' | 'normal' | 'high' => {
-    const { currentStock, minStock, maxStock } = product
-    
-    if (currentStock <= minStock * 0.5) return 'critical'
-    if (currentStock <= minStock) return 'low'
-    if (maxStock && currentStock >= maxStock) return 'high'
+    const { current, min, max } = aggregateStock(product)
+    if (current <= min * 0.5) return 'critical'
+    if (current <= min) return 'low'
+    if (max && current >= max) return 'high'
     return 'normal'
   }
 
   const getStockPercentage = (product: Product): number => {
-    const { currentStock, minStock, maxStock } = product
-    const max = maxStock || minStock * 3
-    return Math.min((currentStock / max) * 100, 100)
+    const { current, min, max } = aggregateStock(product)
+    const maxValue = max || min * 3 || 1
+    return Math.min((current / maxValue) * 100, 100)
   }
 
   const getStockColor = (status: string): string => {
@@ -138,7 +149,7 @@ export function ProductList({ products, onEditProduct, onDeleteProduct, onAdjust
                   <p className="text-xs text-muted-foreground mb-1">Stock Actual</p>
                   <div className="flex items-center gap-2">
                     <span className={`text-2xl font-bold font-mono ${getStockColor(status)}`}>
-                      {product.currentStock}
+                      {aggregateStock(product).current}
                     </span>
                     <span className="text-sm text-muted-foreground">{product.unit}</span>
                   </div>
@@ -148,20 +159,21 @@ export function ProductList({ products, onEditProduct, onDeleteProduct, onAdjust
                   <p className="text-xs text-muted-foreground mb-1">Stock Mínimo</p>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold font-mono text-muted-foreground">
-                      {product.minStock}
+                      {aggregateStock(product).min}
                     </span>
                     <span className="text-sm text-muted-foreground">{product.unit}</span>
                   </div>
                 </div>
 
-                {product.maxStock && (
+                {aggregateStock(product).max && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Stock Máximo</p>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold font-mono text-muted-foreground">
-                        {product.maxStock}
+                        {aggregateStock(product).max}
                       </span>
-                      <span className="text-sm text-muted-foreground">{product.unit}</span>
+                      <span className="text-sm text-muted-foreground">{product.unit}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -207,19 +219,43 @@ export function ProductList({ products, onEditProduct, onDeleteProduct, onAdjust
                 />
               </div>
 
-              {product.costPerUnit && (
-                <div className="border-t pt-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Costo por unidad:</span>
-                    <span className="font-mono font-semibold">${product.costPerUnit.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm mt-1">
-                    <span className="text-muted-foreground">Valor total en stock:</span>
-                    <span className="font-mono font-semibold text-primary">
-                      ${(product.currentStock * product.costPerUnit).toFixed(2)}
-                    </span>
+              {product.presentations?.length ? (
+                <div className="border-t pt-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">Presentaciones</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {product.presentations.map((p) => (
+                      <div key={p.id} className="border rounded-md p-2 bg-white">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold">{p.label}</span>
+                          <Badge variant="outline">{p.unit}</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                          <span>P.V.P</span>
+                          <span className="font-mono font-semibold">${p.pvp.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                          <span>Stock</span>
+                          <span className="font-mono font-semibold">{p.stock?.current ?? 0}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              ) : (
+                product.costPerUnit && (
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Costo por unidad:</span>
+                      <span className="font-mono font-semibold">${product.costPerUnit.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mt-1">
+                      <span className="text-muted-foreground">Valor total en stock:</span>
+                      <span className="font-mono font-semibold text-primary">
+                        ${(product.currentStock * product.costPerUnit).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                )
               )}
 
               <div className="flex gap-2 pt-2">
