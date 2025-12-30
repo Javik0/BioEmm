@@ -5,6 +5,7 @@ import { useDosifications, DosificationForm } from '@/features/dosifications'
 import { useClients } from '@/features/clients'
 import { useStockMovements } from '@/features/inventory'
 import { useUserPermissions } from '@/hooks/useUserPermissions'
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +33,8 @@ export default function DosificationsPage() {
   const { clients } = useClients()
   const { addStockMovement } = useStockMovements()
   const { permissions, loading: permissionsLoading } = useUserPermissions()
+  const { user } = useFirebaseAuth()
+  const author = user?.email || user?.uid || 'system'
 
   const canEditDosifications = permissions.includes('dosificaciones.editar')
   const canManageInventory = permissions.includes('inventario.gestionar')
@@ -85,7 +88,9 @@ export default function DosificationsPage() {
 
     const payload: Partial<Dosification> = {
       ...data,
-      date: dosificationToEdit.date
+      date: dosificationToEdit.date,
+      updatedAt: new Date().toISOString(),
+      updatedBy: author,
     }
 
     const success = await updateDosification(dosificationToEdit.id, payload)
@@ -333,7 +338,7 @@ export default function DosificationsPage() {
       }
     }
 
-    await updateDosification(dosification.id, { status: 'Aplicada' })
+    await updateDosification(dosification.id, { status: 'Aplicada', updatedAt: now, updatedBy: author })
   
     setConfirmDialogOpen(false)
     setDosificationToApply(null)

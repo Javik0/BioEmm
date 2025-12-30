@@ -28,6 +28,7 @@ export const importDataService = {
         price: product.price || 0,
         currentStock: 0,
         minStock: 10,
+        createdBy: 'system',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
@@ -64,7 +65,8 @@ export const importDataService = {
 
       await addDoc(protocolsRef, {
         ...protocol,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        createdBy: 'system'
       })
       addedCount++
     }

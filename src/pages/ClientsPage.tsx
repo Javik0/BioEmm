@@ -9,6 +9,7 @@ import { SimpleMap } from '@/components/SimpleMap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +29,9 @@ export default function ClientsPage() {
   const { dosifications, addDosification } = useDosifications()
   const { products } = useProducts()
   const { visits, addVisit } = useVisits()
+  const { user } = useFirebaseAuth()
+
+  const author = user?.email || user?.uid || 'system'
 
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const [clientDetailOpen, setClientDetailOpen] = useState(false)
@@ -72,8 +76,20 @@ export default function ClientsPage() {
     }
 
     const client: Client = editingClient
-      ? { ...baseClientData, id: editingClient.id, createdAt: editingClient.createdAt }
-      : { ...baseClientData, id: Date.now().toString(), createdAt: new Date().toISOString() }
+      ? {
+          ...baseClientData,
+          id: editingClient.id,
+          createdAt: editingClient.createdAt,
+          createdBy: editingClient.createdBy,
+          updatedAt: new Date().toISOString(),
+          updatedBy: author,
+        }
+      : {
+          ...baseClientData,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString(),
+          createdBy: author,
+        }
 
     void (async () => {
       try {
@@ -204,6 +220,8 @@ export default function ClientsPage() {
     const newDosification: Omit<Dosification, 'id'> = {
       ...dosificationData,
       date: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      createdBy: author,
     }
 
     const success = await addDosification(newDosification)

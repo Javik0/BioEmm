@@ -48,6 +48,12 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
   const [photoManagerOpen, setPhotoManagerOpen] = useState(false)
 
+  const formatDateTime = (value?: string) => {
+    if (!value) return 'N/D'
+    const date = new Date(value)
+    return date.toLocaleString('es-EC', { dateStyle: 'medium', timeStyle: 'short' })
+  }
+
   if (!client) return null
 
   const clientDosifications = dosifications.filter(d => d.clientId === client.id)
@@ -101,6 +107,14 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
                     <Badge variant="outline" className="text-primary border-primary/30">
                       <Flask size={14} className="mr-1" weight="fill" />
                       {clientDosifications.length} dosificacion{clientDosifications.length !== 1 ? 'es' : ''}
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-xs">
+                    Creado por {client.createdBy || 'N/D'} • {formatDateTime(client.createdAt)}
+                  </Badge>
+                  {client.updatedAt && (
+                    <Badge variant="outline" className="text-xs">
+                      Última edición {client.updatedBy || 'N/D'} • {formatDateTime(client.updatedAt)}
                     </Badge>
                   )}
                 </div>

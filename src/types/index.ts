@@ -210,6 +210,9 @@ export interface Client {
   }
   status: ClientStatus
   createdAt: string
+  createdBy?: string
+  updatedAt?: string
+  updatedBy?: string
   notes?: string
   address?: string
   ruc?: string
@@ -274,7 +277,10 @@ export interface Product {
   sku?: string
   presentations?: ProductPresentation[] // Stock y precio por presentación
   createdAt: string
+  createdBy?: string
   lastRestockDate?: string
+  updatedAt?: string
+  updatedBy?: string
   notes?: string
 }
 
@@ -353,6 +359,10 @@ export interface Dosification {
   notes?: string
   status: 'Pendiente' | 'Aplicada' | 'Completada'
   nextApplicationDate?: string
+  createdAt?: string
+  createdBy?: string
+  updatedAt?: string
+  updatedBy?: string
 }
 
 export type CropCategory = 
@@ -521,4 +531,7 @@ export interface DosificationProtocol {
   type: string
   stages: ProtocolStage[]
   createdAt?: string
+  createdBy?: string
+  updatedAt?: string
+  updatedBy?: string
 }
