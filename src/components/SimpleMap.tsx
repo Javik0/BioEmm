@@ -131,7 +131,7 @@ export function SimpleMap({ clients, dosifications = [], onClientClick, onMapCli
   const selectedMarkerRef = useRef<L.Marker | null>(null)
   const baseLayersRef = useRef<{ satellite: L.TileLayer; hybrid: L.TileLayer } | null>(null)
   
-  const [mapType, setMapType] = useState<'satellite' | 'hybrid'>('satellite')
+  const [mapType, setMapType] = useState<'satellite' | 'hybrid'>('hybrid')
   const [selectedCropTypes, setSelectedCropTypes] = useState<Set<CropType>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClientStatus>>(new Set())
   const [cropTypeSearch, setCropTypeSearch] = useState('')
@@ -243,7 +243,7 @@ const createInactiveIcon = () => {
       minZoom: 5
     })
 
-    satelliteLayer.addTo(map)
+    hybridLayer.addTo(map)
 
     baseLayersRef.current = {
       satellite: satelliteLayer,
