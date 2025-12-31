@@ -88,7 +88,7 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent 
-          className="max-w-5xl max-h-[95vh] overflow-y-auto"
+          className="w-[min(1100px,95vw)] md:max-w-6xl max-h-[95vh] overflow-y-auto"
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
@@ -212,13 +212,13 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
           </Card>
 
           <Tabs defaultValue="info" className="mt-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="info" className="flex items-center gap-1 text-xs md:text-sm">
+            <TabsList className="flex w-full gap-2 overflow-x-auto rounded-lg bg-muted/50 p-1 md:grid md:grid-cols-4 md:overflow-visible md:bg-transparent md:p-0">
+              <TabsTrigger value="info" className="flex items-center gap-1 text-xs md:text-sm whitespace-nowrap px-3 py-2 md:justify-center">
                 <Info size={14} />
                 <span className="hidden md:inline">Información</span>
                 <span className="md:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="dosifications" className="flex items-center gap-1 text-xs md:text-sm">
+              <TabsTrigger value="dosifications" className="flex items-center gap-1 text-xs md:text-sm whitespace-nowrap px-3 py-2 md:justify-center">
                 <Flask size={14} />
                 <span className="hidden md:inline">Dosificaciones</span>
                 <span className="md:hidden">Dosis</span>
@@ -228,7 +228,7 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="visits" className="flex items-center gap-1 text-xs md:text-sm">
+              <TabsTrigger value="visits" className="flex items-center gap-1 text-xs md:text-sm whitespace-nowrap px-3 py-2 md:justify-center">
                 <Calendar size={14} />
                 <span className="hidden md:inline">Visitas</span>
                 <span className="md:hidden">Visitas</span>
@@ -238,7 +238,7 @@ export function ClientDetail({ client, open, onOpenChange, onEdit, onUpdatePhoto
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="photos" className="flex items-center gap-1 text-xs md:text-sm">
+              <TabsTrigger value="photos" className="flex items-center gap-1 text-xs md:text-sm whitespace-nowrap px-3 py-2 md:justify-center">
                 <ImageIcon size={14} />
                 <span className="hidden md:inline">Fotos</span>
                 <span className="md:hidden">Fotos</span>
