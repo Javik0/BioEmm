@@ -33,6 +33,16 @@ export const firebaseApp = (() => {
 
 export const auth = getAuth(firebaseApp)
 
+// Secondary app to perform privileged auth operations (e.g., create users) without affecting main session
+const firebaseAdminApp = (() => {
+  const existing = getApps().find((app) => app.name === 'admin')
+  if (existing) return existing
+  assertFirebaseConfig()
+  return initializeApp(firebaseConfig, 'admin')
+})()
+
+export const adminAuth = getAuth(firebaseAdminApp)
+
 // Firestore con cache offline (IndexedDB)
 export const db = initializeFirestore(firebaseApp, {
   ignoreUndefinedProperties: true,

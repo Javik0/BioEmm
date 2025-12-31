@@ -53,6 +53,8 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { useUsers } from '@/features/users/hooks/useUsers'
+import { usersService } from '@/features/users/services/firestoreUsers'
 
 const MOCK_ROLES: Role[] = [
   {
@@ -76,26 +78,15 @@ const MOCK_ROLES: Role[] = [
 ]
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      email: 'javico.davila@gmail.com',
-      displayName: 'Javier Dávila',
-      phone: '0996560505',
-      roleId: '1',
-      roleName: 'Administrador',
-      status: 'Activo',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
-    }
-  ])
+  const { users, loading } = useUsers()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<UserStatus | 'Todos'>('Todos')
   const [showDialog, setShowDialog] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     displayName: '',
@@ -131,7 +122,7 @@ export default function UsersPage() {
     setEditingUser(user)
     setFormData({
       email: user.email.trim(),
-      displayName: user.displayName.toUpperCase(),
+      displayName: user.displayName,
       phone: user.phone?.trim() || '',
       roleId: user.roleId,
       status: user.status
@@ -144,20 +135,28 @@ export default function UsersPage() {
     setDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!userToDelete) return
-    setUsers(users.filter(u => u.id !== userToDelete.id))
-    toast.success('Usuario eliminado correctamente')
-    setDeleteDialogOpen(false)
-    setUserToDelete(null)
+    try {
+      setDeleting(true)
+      await usersService.delete(userToDelete.id)
+      toast.success('Usuario eliminado del listado (la cuenta de acceso requiere backend para borrarse)')
+    } catch (error) {
+      console.error(error)
+      toast.error('No se pudo eliminar el usuario')
+    } finally {
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
+    }
   }
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const normalizedEmail = formData.email.replace(/\s+/g, '').toLowerCase()
-    const normalizedName = formData.displayName.trim().toUpperCase()
+    const normalizedName = formData.displayName.trim()
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -177,36 +176,31 @@ export default function UsersPage() {
     }
 
     const selectedRole = MOCK_ROLES.find(r => r.id === formData.roleId)
-    
-    if (editingUser) {
-      setUsers(users.map(u => u.id === editingUser.id ? {
-        ...u,
-        email: normalizedEmail,
-        displayName: normalizedName,
-        phone: formData.phone.trim(),
-        roleId: formData.roleId,
-        roleName: selectedRole?.name || '',
-        status: formData.status,
-        updatedAt: new Date().toISOString()
-      } : u))
-      toast.success('Usuario actualizado correctamente')
-    } else {
-      const newUser: User = {
-        id: Date.now().toString(),
-        email: normalizedEmail,
-        displayName: normalizedName,
-        phone: formData.phone.trim(),
-        roleId: formData.roleId,
-        roleName: selectedRole?.name || '',
-        status: formData.status,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-      setUsers([...users, newUser])
-      toast.success('Usuario creado correctamente')
+    const basePayload = {
+      email: normalizedEmail,
+      displayName: normalizedName,
+      phone: formData.phone.trim(),
+      roleId: formData.roleId,
+      roleName: selectedRole?.name || '',
+      status: formData.status as UserStatus,
     }
-    
-    setShowDialog(false)
+
+    try {
+      setSaving(true)
+      if (editingUser) {
+        await usersService.update(editingUser.id, basePayload)
+        toast.success('Usuario actualizado')
+      } else {
+        await usersService.create(basePayload)
+        toast.success('Usuario creado. Se envió correo para que defina su contraseña.')
+      }
+      setShowDialog(false)
+    } catch (error) {
+      console.error(error)
+      toast.error('No se pudo guardar el usuario')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const getStatusIcon = (status: UserStatus) => {
@@ -504,11 +498,11 @@ export default function UsersPage() {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+              <Button type="button" variant="outline" onClick={() => setShowDialog(false)} disabled={saving}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Guardando...' : editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
               </Button>
             </DialogFooter>
           </form>
@@ -530,7 +524,7 @@ export default function UsersPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700" disabled={deleting}>
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
